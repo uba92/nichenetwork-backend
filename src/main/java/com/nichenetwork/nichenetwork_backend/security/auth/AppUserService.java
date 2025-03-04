@@ -6,6 +6,7 @@ import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Optional;
 import java.util.Set;
@@ -94,6 +96,23 @@ public class AppUserService {
 
 
         return appUser;
+    }
+
+    //crea un admin
+    public ResponseEntity<String> createAdminUser(AdminUserRequest request) {
+        AppUser appUser = new AppUser();
+        appUser.setUsername(request.getUsername());
+        appUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        appUser.setRoles(Set.of(Role.ROLE_ADMIN));
+        appUserRepository.save(appUser);
+        return ResponseEntity.ok("Admin successfully created");
+
+    }
+
+    //elmina un admin
+    public ResponseEntity<String> deleteAdminUser(Long id) {
+        appUserRepository.deleteById(id);
+        return ResponseEntity.ok("Admin successfully deleted");
     }
 
 }

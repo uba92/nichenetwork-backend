@@ -20,6 +20,13 @@ public class AuthRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        //Creazioine del superadmin se non esiste
+        Optional<AppUser> superAdminUser = appUserService.findByUsername("superadmin");
+        if (superAdminUser.isEmpty()) {
+            // Creiamo il superadmin con un ruolo speciale
+            appUserService.registerUser("superadmin", "superadminpwd", "superadmin@example.com", "Super", "Admin", Set.of(Role.ROLE_ADMIN, Role.ROLE_SUPERADMIN));
+        }
+
         // Creazione dell'utente admin se non esiste
         Optional<AppUser> adminUser = appUserService.findByUsername("admin");
         if (adminUser.isEmpty()) {

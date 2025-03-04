@@ -48,7 +48,6 @@ public class User {
     @Column(length = 50)
     private String lastName;
 
-    @Size(max = 255, message = "Avatar must be at most 255 characters long")
     private String avatar;
 
     @Size(max = 255, message = "Bio must be at most 255 characters long")

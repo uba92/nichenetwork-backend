@@ -1,6 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.community;
 
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
+import com.nichenetwork.nichenetwork_backend.post.Post;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,6 +32,9 @@ public class Community {
 
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CommunityMember> members;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Post> posts;
 
     @PrePersist
     protected void onCreate() {

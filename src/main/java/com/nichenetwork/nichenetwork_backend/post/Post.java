@@ -1,6 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.post;
 
 import com.nichenetwork.nichenetwork_backend.comment.Comment;
+import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,12 +25,15 @@ public class Post {
     @Column(nullable = false, length = 255)
     private String content;
 
-
     private String image;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "community_id", nullable = false)
+    private Community community;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
