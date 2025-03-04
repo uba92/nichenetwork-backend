@@ -58,4 +58,10 @@ public class ExceptionHandlerClass extends ResponseEntityExceptionHandler {
         }
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(value = BadRequestException.class)
+    protected ResponseEntity<String> handleBadRequest(BadRequestException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
 }

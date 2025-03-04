@@ -6,6 +6,10 @@ import com.nichenetwork.nichenetwork_backend.follow.Follow;
 import com.nichenetwork.nichenetwork_backend.like.Like;
 import com.nichenetwork.nichenetwork_backend.post.Post;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,29 +27,39 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Username is required")
     @Column(nullable=false, unique = true, length = 50)
     private String username;
 
+    @NotBlank(message = "Password is required")
     @Column(nullable=false)
     private String password;
 
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     @Column(nullable=false, unique = true, length = 50)
     private String email;
 
+    @Size(max = 50, message = "First name must be at most 50 characters long")
     @Column(length = 50)
     private String firstName;
 
+    @Size(max = 50, message = "Last name must be at most 50 characters long")
     @Column(length = 50)
     private String lastName;
 
+    @Size(max = 255, message = "Avatar must be at most 255 characters long")
     private String avatar;
 
+    @Size(max = 255, message = "Bio must be at most 255 characters long")
     @Column(length = 255)
     private String bio;
 
+    @NotNull(message = "Date of creation is required")
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @NotNull(message = "Date of last update is required")
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 

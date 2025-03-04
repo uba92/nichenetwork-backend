@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.security.auth;
 
+import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityExistsException;
@@ -37,6 +38,17 @@ public class AppUserService {
     public User registerUser(String username, String password, String email, String firstName, String lastName, Set<Role> roles) {
         if (appUserRepository.existsByUsername(username)) {
             throw new EntityExistsException("Username già in uso");
+        }
+        if (appUserRepository.existsByEmail(email)) {
+            throw new EntityExistsException("Email gia' in uso");
+        }
+
+        if(password.length() < 8) {
+            throw new BadRequestException("La password deve avere almeno 8 caratteri");
+        }
+
+        if (roles == null || roles.isEmpty()) {
+            throw new BadRequestException("Almeno un ruolo deve essere assegnato");
         }
 
         AppUser appUser = new AppUser();
