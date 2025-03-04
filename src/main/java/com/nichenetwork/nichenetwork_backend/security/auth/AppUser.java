@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "users")
+@Table(name = "app_users")
 @NoArgsConstructor
 @Data
 public class AppUser implements UserDetails {
@@ -23,6 +23,9 @@ public class AppUser implements UserDetails {
 
     @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     @ToString.Exclude

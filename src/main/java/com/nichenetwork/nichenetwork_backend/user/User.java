@@ -2,7 +2,6 @@ package com.nichenetwork.nichenetwork_backend.user;
 
 import com.nichenetwork.nichenetwork_backend.comment.Comment;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
-import com.nichenetwork.nichenetwork_backend.enums.Role;
 import com.nichenetwork.nichenetwork_backend.follow.Follow;
 import com.nichenetwork.nichenetwork_backend.like.Like;
 import com.nichenetwork.nichenetwork_backend.post.Post;
@@ -49,10 +48,6 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
-    private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Post> posts;

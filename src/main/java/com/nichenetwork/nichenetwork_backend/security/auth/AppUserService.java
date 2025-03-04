@@ -1,5 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.security.auth;
 
+import com.nichenetwork.nichenetwork_backend.user.User;
+import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ import java.util.Set;
 public class AppUserService {
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private AppUserRepository appUserRepository;
 
     @Autowired
@@ -29,7 +34,7 @@ public class AppUserService {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    public AppUser registerUser(String username, String password, Set<Role> roles) {
+    public User registerUser(String username, String password, String email, String firstName, String lastName, Set<Role> roles) {
         if (appUserRepository.existsByUsername(username)) {
             throw new EntityExistsException("Username già in uso");
         }
@@ -38,7 +43,19 @@ public class AppUserService {
         appUser.setUsername(username);
         appUser.setPassword(passwordEncoder.encode(password));
         appUser.setRoles(roles);
-        return appUserRepository.save(appUser);
+        appUserRepository.save(appUser);
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setBio(null);
+        user.setAvatar(null);
+
+        userRepository.save(user);
+
+        return user;
     }
 
     public Optional<AppUser> findByUsername(String username) {
@@ -66,4 +83,5 @@ public class AppUserService {
 
         return appUser;
     }
+
 }
