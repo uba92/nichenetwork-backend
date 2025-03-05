@@ -21,41 +21,46 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostRequest request) {
-        PostResponse response = postService.createPost(request).getBody();
+        PostResponse response = postService.createPost(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("#appUser.username == #username")
     public ResponseEntity<PostResponse> updatePost(@PathVariable Long id, @RequestBody PostRequest request, @AuthenticationPrincipal AppUser appUser, @RequestParam String username) {
-        PostResponse response = postService.updatePost(id, request).getBody();
+        PostResponse response = postService.updatePost(id, request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getAllPosts(Pageable pageable) {
-        return postService.getAllPosts(pageable);
+        Page<PostResponse> response = postService.getAllPosts(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> getPostById(@PathVariable Long id) {
-        return postService.getPostById(id);
+        PostResponse response = postService.getPostById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<PostResponse>> getAllPostsByUserId(@PathVariable Long userId, Pageable pageable) {
-        return postService.getAllPostsByUserId(userId, pageable);
+        Page<PostResponse> response = postService.getAllPostsByUserId(userId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/community/{communityId}")
     public ResponseEntity<Page<PostResponse>> getAllPostsByCommunityId(@PathVariable Long communityId, Pageable pageable) {
-        return postService.getAllPostsByCommunityId(communityId, pageable);
+        Page<PostResponse> response = postService.getAllPostsByCommunityId(communityId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("#appUser.username == #username or hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deletePost(@PathVariable Long id, @AuthenticationPrincipal AppUser appUser, @RequestParam String username) {
-        return postService.deletePost(id);
+         postService.deletePost(id);
+        return ResponseEntity.ok("Post deleted successfully");
     }
 
     @DeleteMapping("/delete-by-moderator/{moderatorId}/{postId}")

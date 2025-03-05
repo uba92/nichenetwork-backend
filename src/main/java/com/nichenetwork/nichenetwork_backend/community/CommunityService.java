@@ -27,8 +27,7 @@ public class CommunityService {
     private final UserRepository userRepository;
 
     @Transactional
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<CommunityResponse> createCommunity(CommunityRequest request, @AuthenticationPrincipal AppUser adminUser) {
+    public CommunityResponse createCommunity(CommunityRequest request, AppUser adminUser) {
 
         if (!adminUser.getRole().equals(Role.ROLE_ADMIN)) {
             throw new IllegalStateException("Only admins can create communities");
@@ -57,30 +56,29 @@ public class CommunityService {
                 community.getCreatedAt().toString()
         );
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 
 
-    public ResponseEntity<CommunityResponse> getCommunityById(Long id) {
+    public CommunityResponse getCommunityById(Long id) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + id));
 
         CommunityResponse response = new CommunityResponse(community.getId(), community.getName(), community.getDescription(), community.getCreatedAt().toString());
-        return ResponseEntity.ok(response);
+        return response;
     }
 
-    public ResponseEntity<List<CommunityResponse>> getAllCommunities() {
+    public List<CommunityResponse> getAllCommunities() {
         List<Community> communities = communityRepository.findAll();
         List<CommunityResponse> response = communities.stream()
                 .map(community -> new CommunityResponse(community.getId(), community.getName(), community.getDescription(), community.getCreatedAt().toString()))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+        return response;
     }
 
 
     @Transactional
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<CommunityResponse> updateCommunity(Long id, CommunityRequest request) {
+    public CommunityResponse updateCommunity(Long id, CommunityRequest request) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + id));
 
@@ -89,18 +87,17 @@ public class CommunityService {
         communityRepository.save(community);
 
         CommunityResponse response = new CommunityResponse(community.getId(), community.getName(), community.getDescription(), community.getCreatedAt().toString());
-        return ResponseEntity.ok(response);
+        return response;
     }
 
 
     @Transactional
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> deleteCommunity(Long id) {
+    public String deleteCommunity(Long id) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + id));
 
         communityRepository.delete(community);
-        return ResponseEntity.ok("Community deleted successfully");
+        return ("Community deleted successfully");
     }
 
 }

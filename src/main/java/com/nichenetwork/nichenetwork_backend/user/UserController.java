@@ -60,7 +60,9 @@ public class UserController {
     public ResponseEntity<String> changePassword(@AuthenticationPrincipal AppUser appUser, @RequestBody ChangePasswordRequest request) {
         String username = appUser.getUsername();
 
-        return userService.changePassword(username, request);
+        userService.changePassword(username, request);
+
+        return ResponseEntity.ok("Password aggiornata con successo");
     }
 
     @PutMapping("/changeAvatar")

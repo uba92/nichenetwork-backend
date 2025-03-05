@@ -70,7 +70,7 @@ public class UserService {
 
 
     @Transactional
-    public ResponseEntity<String> updateProfile(String username, UpdateUserRequest request) {
+    public String updateProfile(String username, UpdateUserRequest request) {
         User user = findByUsername(username);
         if (request.getFirstName() != null) {
             user.setFirstName(request.getFirstName());
@@ -85,10 +85,10 @@ public class UserService {
             user.setAvatar(request.getAvatar());
         }
         userRepository.save(user);
-        return ResponseEntity.ok("Profilo aggiornato con successo");
+        return "Profilo aggiornato con successo";
     }
 
-    public ResponseEntity<String> changePassword(String username, ChangePasswordRequest request) {
+    public String changePassword(String username, ChangePasswordRequest request) {
         AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
             if (!passwordEncoder.matches(request.getOldPassword(), appUser.getPassword())) {
                 throw new BadRequestException("---La vecchia password non è corretta!---");
@@ -100,10 +100,10 @@ public class UserService {
 
         appUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
         appUserRepository.save(appUser);
-        return ResponseEntity.ok("Password aggiornata con successo");
+        return"Password aggiornata con successo";
     }
 
-    public ResponseEntity<String> deleteUser(String username, String password) {
+    public String deleteUser(String username, String password) {
         User user = findByUsername(username);
         AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
         if (!passwordEncoder.matches(password, appUser.getPassword())) {
@@ -111,7 +111,7 @@ public class UserService {
         }
         appUserRepository.delete(appUser);
         userRepository.delete(user);
-        return ResponseEntity.ok("Utente eliminato con successo");
+        return "Utente eliminato con successo";
     }
 
     public void deleteUserAsAdmin(String username) {
@@ -130,13 +130,13 @@ public class UserService {
         return userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con email " + email));
     }
 
-    public ResponseEntity<String> changeAvatar(String username, ChangeAvatarRequest request) {
+    public String changeAvatar(String username, ChangeAvatarRequest request) {
         User user = findByUsername(username);
         if (request.getAvatar() == null) {
             throw new BadRequestException("---L'avatar non é valido!---");
         }
         user.setAvatar(request.getAvatar());
         userRepository.save(user);
-        return ResponseEntity.ok("Avatar aggiornato con successo");
+        return "Avatar aggiornato con successo";
     }
 }

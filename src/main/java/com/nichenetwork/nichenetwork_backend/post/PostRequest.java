@@ -18,6 +18,6 @@ public class PostRequest {
 
     private String image;
 
-    @NotNull(message = "Community ID is required")
+//    @NotNull(message = "Community ID is required")
     private Long communityId;
 }
