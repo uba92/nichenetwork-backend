@@ -62,5 +62,7 @@ public class AppUser implements UserDetails {
    }
 
 
-
+    public Object getRole() {
+        return null;
+    }
 }

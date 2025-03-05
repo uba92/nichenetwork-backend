@@ -57,6 +57,35 @@ public class CommunityMemberService {
         communityMemberRepository.delete(member);
     }
 
+    @Transactional
+    public void removeMember(Long adminId, Long userId, Long communityId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new EntityNotFoundException("Admin/moderator user not found"));
+
+        User userToRemove = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User to remove not found"));
+
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new EntityNotFoundException("Community not found"));
+
+        CommunityMember adminMember = communityMemberRepository.findByUserAndCommunity(admin, community)
+                .orElseThrow(() -> new IllegalStateException("You are not a member of this community"));
+
+        CommunityMember userMember = communityMemberRepository.findByUserAndCommunity(userToRemove, community)
+                .orElseThrow(() -> new IllegalStateException("User is not a member of this community"));
+
+        if (adminMember.getRole() != CommunityRole.OWNER && adminMember.getRole() != CommunityRole.MODERATOR) {
+            throw new IllegalStateException("Only the owner or a moderator can remove members");
+        }
+
+        if (userMember.getRole() == CommunityRole.OWNER) {
+            throw new IllegalStateException("You cannot remove the owner of the community");
+        }
+
+        communityMemberRepository.delete(userMember);
+    }
+
+
     public List<CommunityMember> getCommunityMembers(Long communityId) {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new EntityNotFoundException("Community not found"));

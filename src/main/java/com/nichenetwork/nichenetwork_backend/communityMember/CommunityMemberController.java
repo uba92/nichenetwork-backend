@@ -35,4 +35,14 @@ public class CommunityMemberController {
         communityMemberService.promoteToModerator(ownerId, userId, communityId);
         return ResponseEntity.ok("User promoted to moderator successfully");
     }
+
+    @DeleteMapping("/remove/{adminId}/{userId}/{communityId}")
+    public ResponseEntity<String> removeMember(
+            @PathVariable Long adminId,
+            @PathVariable Long userId,
+            @PathVariable Long communityId) {
+        communityMemberService.removeMember(adminId, userId, communityId);
+        return ResponseEntity.ok("User removed from the community successfully");
+    }
+
 }

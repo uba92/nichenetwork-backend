@@ -2,6 +2,11 @@ package com.nichenetwork.nichenetwork_backend.post;
 
 import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
+import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
+import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
+import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
+import com.nichenetwork.nichenetwork_backend.user.User;
+import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +26,8 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CommunityRepository communityRepository;
+    private final UserRepository userRepository;
+    private final CommunityMemberRepository communityMemberRepository;
 
     @Transactional
     public ResponseEntity<PostResponse> createPost(@RequestBody PostRequest request) {
@@ -81,6 +88,28 @@ public class PostService {
         postRepository.delete(post);
         return ResponseEntity.ok("Post deleted successfully");
     }
+
+    @Transactional
+    public void deletePostAsModerator(Long moderatorId, Long postId) {
+        User moderator = userRepository.findById(moderatorId)
+                .orElseThrow(() -> new EntityNotFoundException("Moderator not found"));
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        Community community = post.getCommunity();
+
+        CommunityMember moderatorMember = communityMemberRepository.findByUserAndCommunity(moderator, community)
+                .orElseThrow(() -> new IllegalStateException("You are not a member of this community"));
+
+        // ✅ Solo OWNER e MODERATOR possono eliminare post
+        if (moderatorMember.getRole() != CommunityRole.OWNER && moderatorMember.getRole() != CommunityRole.MODERATOR) {
+            throw new IllegalStateException("Only the owner or a moderator can delete posts");
+        }
+
+        postRepository.delete(post);
+    }
+
 
     //metodi aggiuntivi
     public PostResponse responseFromEntity(Post post) {

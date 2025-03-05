@@ -57,4 +57,12 @@ public class PostController {
     public ResponseEntity<String> deletePost(@PathVariable Long id, @AuthenticationPrincipal AppUser appUser, @RequestParam String username) {
         return postService.deletePost(id);
     }
+
+    @DeleteMapping("/delete-by-moderator/{moderatorId}/{postId}")
+    public ResponseEntity<String> deletePostAsModerator(
+            @PathVariable Long moderatorId,
+            @PathVariable Long postId) {
+        postService.deletePostAsModerator(moderatorId, postId);
+        return ResponseEntity.ok("Post deleted successfully by moderator");
+    }
 }

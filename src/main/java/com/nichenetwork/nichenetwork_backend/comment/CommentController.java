@@ -38,6 +38,14 @@ public class CommentController {
         return ResponseEntity.ok("Comment deleted successfully");
     }
 
+    @DeleteMapping("/delete-by-moderator/{moderatorId}/{commentId}")
+    public ResponseEntity<String> deleteCommentAsModerator(
+            @PathVariable Long moderatorId,
+            @PathVariable Long commentId) {
+        commentService.deleteCommentAsModerator(moderatorId, commentId);
+        return ResponseEntity.ok("Comment deleted successfully by moderator");
+    }
+
     @GetMapping("/post/{postId}")
     public ResponseEntity<List<Comment>> getCommentsByPost(@PathVariable Long postId) {
         return ResponseEntity.ok(commentService.getCommentsByPost(postId));

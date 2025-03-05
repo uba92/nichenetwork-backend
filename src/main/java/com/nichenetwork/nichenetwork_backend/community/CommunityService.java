@@ -1,9 +1,17 @@
 package com.nichenetwork.nichenetwork_backend.community;
 
+import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
+import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
+import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
+import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
+import com.nichenetwork.nichenetwork_backend.security.auth.Role;
+import com.nichenetwork.nichenetwork_backend.user.User;
+import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,16 +23,40 @@ import java.util.stream.Collectors;
 public class CommunityService {
 
     private final CommunityRepository communityRepository;
+    private final CommunityMemberRepository communityMemberRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<CommunityResponse> createCommunity(CommunityRequest request) {
+    public ResponseEntity<CommunityResponse> createCommunity(CommunityRequest request, @AuthenticationPrincipal AppUser adminUser) {
+
+        if (!adminUser.getRole().equals(Role.ROLE_ADMIN)) {
+            throw new IllegalStateException("Only admins can create communities");
+        }
+
         Community community = new Community();
         community.setName(request.getName());
         community.setDescription(request.getDescription());
         communityRepository.save(community);
 
-        CommunityResponse response = new CommunityResponse(community.getId(), community.getName(), community.getDescription(), community.getCreatedAt().toString());
+
+        User admin = userRepository.findByEmail(adminUser.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("Admin user not found"));
+
+
+        CommunityMember owner = new CommunityMember();
+        owner.setUser(admin);
+        owner.setCommunity(community);
+        owner.setRole(CommunityRole.OWNER);
+        communityMemberRepository.save(owner);
+
+        CommunityResponse response = new CommunityResponse(
+                community.getId(),
+                community.getName(),
+                community.getDescription(),
+                community.getCreatedAt().toString()
+        );
+
         return ResponseEntity.ok(response);
     }
 
