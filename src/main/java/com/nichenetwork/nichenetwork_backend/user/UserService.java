@@ -1,12 +1,21 @@
 package com.nichenetwork.nichenetwork_backend.user;
 
+import com.github.javafaker.App;
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
+import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
+import com.nichenetwork.nichenetwork_backend.security.auth.AppUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AppUserRepository appUserRepository;
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
@@ -22,6 +32,42 @@ public class UserService {
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con id " + id));
     }
+
+    public Page<UserResponse> searchUsers(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.searchUsers(query, pageable)
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getAvatar(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getBio(),
+                        user.getCreatedAt()
+                ));
+    }
+
+
+    public Page<User> searchUsersForAdmin(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.searchUsersForAdmin(query, pageable);
+    }
+
+
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getAvatar(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getBio(),
+                        user.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
     @Transactional
     public ResponseEntity<String> updateProfile(String username, UpdateUserRequest request) {
@@ -43,8 +89,8 @@ public class UserService {
     }
 
     public ResponseEntity<String> changePassword(String username, ChangePasswordRequest request) {
-        User user = findByUsername(username);
-            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+        AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
+            if (!passwordEncoder.matches(request.getOldPassword(), appUser.getPassword())) {
                 throw new BadRequestException("---La vecchia password non è corretta!---");
             }
 
@@ -52,19 +98,29 @@ public class UserService {
             throw new BadRequestException("La nuova password deve avere almeno 8 caratteri");
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+        appUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        appUserRepository.save(appUser);
         return ResponseEntity.ok("Password aggiornata con successo");
     }
 
     public ResponseEntity<String> deleteUser(String username, String password) {
         User user = findByUsername(username);
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
+        if (!passwordEncoder.matches(password, appUser.getPassword())) {
             throw new BadRequestException("---La password non é corretta!---");
         }
+        appUserRepository.delete(appUser);
         userRepository.delete(user);
         return ResponseEntity.ok("Utente eliminato con successo");
     }
+
+    public void deleteUserAsAdmin(String username) {
+        User user = findByUsername(username);
+        AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
+        appUserRepository.delete(appUser);
+        userRepository.delete(user);
+    }
+
 
     public User loadUserById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con id " + id));

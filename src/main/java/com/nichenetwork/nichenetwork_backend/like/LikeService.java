@@ -52,7 +52,7 @@ public class LikeService {
     }
 
     public int countLikesOnPost(Long postId) {
-        return likeRepository.countLikesOnPost(postId);
+        return likeRepository.countByPostId(postId);
     }
 
     @Transactional
@@ -84,6 +84,6 @@ public class LikeService {
     }
 
     public int countLikesOnComment(Long commentId) {
-        return likeRepository.countLikesOnComment(commentId);
+        return likeRepository.countByCommentId(commentId);
     }
 }

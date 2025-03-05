@@ -1,6 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.security.auth;
 
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
+import com.nichenetwork.nichenetwork_backend.user.ChangePasswordRequest;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityExistsException;
@@ -45,6 +46,10 @@ public class AppUserService {
             throw new EntityExistsException("Email gia' in uso");
         }
 
+        if(email == null) {
+            throw new BadRequestException("Email non valida");
+        }
+
         if(password.length() < 8) {
             throw new BadRequestException("La password deve avere almeno 8 caratteri");
         }
@@ -56,6 +61,7 @@ public class AppUserService {
         AppUser appUser = new AppUser();
         appUser.setUsername(username);
         appUser.setPassword(passwordEncoder.encode(password));
+        appUser.setEmail(email);
         appUser.setRoles(roles);
         appUserRepository.save(appUser);
 
@@ -98,11 +104,13 @@ public class AppUserService {
         return appUser;
     }
 
+
     //crea un admin
     public ResponseEntity<String> createAdminUser(AdminUserRequest request) {
         AppUser appUser = new AppUser();
         appUser.setUsername(request.getUsername());
         appUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        appUser.setEmail(request.getEmail());
         appUser.setRoles(Set.of(Role.ROLE_ADMIN));
         appUserRepository.save(appUser);
         return ResponseEntity.ok("Admin successfully created");
