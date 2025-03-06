@@ -35,17 +35,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        System.out.println("✅ Configurazione dSecurityFilterChain caricata correttamente!");
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable()) // Disabilita CSRF
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html"
-                        ).permitAll() //
-                        .requestMatchers("/api/auth/**").permitAll() //
+                                    .requestMatchers(
+                                            "/swagger-ui/**",
+                                            "/v3/api-docs/**",
+                                            "/swagger-ui.html",
+                                            "/api/auth/**"
+                                    ).permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()
+
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -53,6 +57,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 );
+
 
         // Aggiungi il filtro JWT
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

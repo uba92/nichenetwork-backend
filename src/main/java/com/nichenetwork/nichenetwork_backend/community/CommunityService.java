@@ -3,6 +3,7 @@ package com.nichenetwork.nichenetwork_backend.community;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
+import com.nichenetwork.nichenetwork_backend.exceptions.UnauthorizedException;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.Role;
 import com.nichenetwork.nichenetwork_backend.user.User;
@@ -29,7 +30,14 @@ public class CommunityService {
     @Transactional
     public CommunityResponse createCommunity(CommunityRequest request, AppUser adminUser) {
 
-        if (!adminUser.getRole().equals(Role.ROLE_ADMIN)) {
+        System.out.println("Admin autenticato: " + (adminUser != null ? adminUser.getEmail() : "null"));
+        System.out.println("Ruolo dell'admin: " + (adminUser != null ? adminUser.getRole() : "null"));
+
+        if (adminUser == null || adminUser.getRole() == null) {
+            throw new UnauthorizedException("Utente non autenticato o ruolo non assegnato");
+        }
+
+        if (!adminUser.getRole().equals(Role.ADMIN)) {
             throw new IllegalStateException("Only admins can create communities");
         }
 

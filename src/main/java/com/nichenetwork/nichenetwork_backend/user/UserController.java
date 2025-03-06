@@ -74,13 +74,13 @@ public class UserController {
     }
 
     @DeleteMapping("/deleteUser")
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<String> deleteUser(@AuthenticationPrincipal AppUser appUser,
                                              @RequestParam(required = false) String password,
                                              @RequestParam(required = false) String targetUsername) {
         String authenticatedUsername = appUser.getUsername();
 
-        if (appUser.getRoles().contains(Role.ROLE_ADMIN)) {
+        if (appUser.getRoles().contains(Role.ADMIN)) {
 
             if (targetUsername == null || targetUsername.isEmpty()) {
                 return ResponseEntity.badRequest().body("Devi specificare lo username dell'utente da eliminare");
@@ -108,7 +108,7 @@ public class UserController {
     }
 
     @GetMapping("/admin/search")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<User>> searchUsersForAdmin(
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
@@ -120,7 +120,7 @@ public class UserController {
 
 
     @GetMapping("/users/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userService.findById(id);
         if (user == null) {

@@ -111,7 +111,7 @@ public class AppUserService {
         appUser.setUsername(request.getUsername());
         appUser.setPassword(passwordEncoder.encode(request.getPassword()));
         appUser.setEmail(request.getEmail());
-        appUser.setRoles(Set.of(Role.ROLE_ADMIN));
+        appUser.setRoles(Set.of(Role.ADMIN));
         appUserRepository.save(appUser);
         return ResponseEntity.ok("Admin successfully created");
 

@@ -44,7 +44,7 @@ public class AppUser implements UserDetails {
     public Collection<GrantedAuthority> getAuthorities() {
 
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                 .collect(Collectors.toList());
     }
 
@@ -61,8 +61,8 @@ public class AppUser implements UserDetails {
         this.accountNonLocked = accountNonLocked;
    }
 
-
-    public Object getRole() {
-        return null;
+    public Role getRole() {
+        return roles.stream().findFirst().orElse(null);
     }
+
 }

@@ -34,7 +34,7 @@ public class AuthController {
                 registerRequest.getEmail(),
                 registerRequest.getFirstName(),
                 registerRequest.getLastName(),
-                Set.of(Role.ROLE_USER)  // Ruolo di default
+                Set.of(Role.USER)  // Ruolo di default
         );
 
         return ResponseEntity.ok("Registrazione avvenuta con successo");

@@ -13,13 +13,13 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/post/{postId}/user/{userId}")
-    public ResponseEntity<Comment> createComment(
-            @PathVariable Long postId,
-            @PathVariable Long userId,
-            @RequestParam String content) {
-        return ResponseEntity.ok(commentService.createComment(userId, postId, content));
-    }
+//    @PostMapping("/post/{postId}/user/{userId}")
+//    public ResponseEntity<Comment> createComment(
+//            @PathVariable Long postId,
+//            @PathVariable Long userId,
+//            @RequestParam String content) {
+//        return ResponseEntity.ok(commentService.createComment(userId, postId, content));
+//    }
 
     @PutMapping("/{commentId}/user/{userId}")
     public ResponseEntity<String> updateComment(

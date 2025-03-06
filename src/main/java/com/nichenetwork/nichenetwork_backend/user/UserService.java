@@ -1,6 +1,5 @@
 package com.nichenetwork.nichenetwork_backend.user;
 
-import com.github.javafaker.App;
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUserRepository;

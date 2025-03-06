@@ -13,8 +13,10 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -30,10 +32,6 @@ public class User {
     @NotBlank(message = "Username is required")
     @Column(nullable=false, unique = true, length = 50)
     private String username;
-
-//    @NotBlank(message = "Password is required")
-//    @Column(nullable=false)
-//    private String password;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
@@ -63,22 +61,28 @@ public class User {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Post> posts;
+    @ToString.Exclude
+    private List<Post> posts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Comment> comments;
+    @ToString.Exclude
+    private List<Comment> comments;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CommunityMember> communityMemberships;
+    @ToString.Exclude
+    private List<CommunityMember> communityMemberships;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Like> likes;
+    @ToString.Exclude
+    private List<Like> likes;
 
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Follow> followingUsers; //Lista di utenti seguiti
+    @ToString.Exclude
+    private List<Follow> followingUsers; //Lista di utenti seguiti
 
     @OneToMany(mappedBy = "following", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Follow> followers; //Lista di utenti che mi seguono
+    @ToString.Exclude
+    private List<Follow> followers; //Lista di utenti che mi seguono
 
 
     @PrePersist

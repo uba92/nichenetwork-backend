@@ -18,7 +18,7 @@ public class CommunityController {
     private final CommunityService communityService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CommunityResponse> createCommunity(@RequestBody CommunityRequest request, @AuthenticationPrincipal AppUser adminUser) {
         CommunityResponse response = communityService.createCommunity(request, adminUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -37,14 +37,14 @@ public class CommunityController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CommunityResponse> updateCommunity(@PathVariable Long id, @RequestBody CommunityRequest request) {
         CommunityResponse response = communityService.updateCommunity(id, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteCommunity(@PathVariable Long id) {
         communityService.deleteCommunity(id);
         return ResponseEntity.status(HttpStatus.OK).body("Community deleted successfully");

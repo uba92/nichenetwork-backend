@@ -6,8 +6,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -31,10 +33,12 @@ public class Community {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CommunityMember> members;
+    @ToString.Exclude
+    private List<CommunityMember> members;
 
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Post> posts;
+    @ToString.Exclude
+    private List<Post> posts;
 
     @PrePersist
     protected void onCreate() {

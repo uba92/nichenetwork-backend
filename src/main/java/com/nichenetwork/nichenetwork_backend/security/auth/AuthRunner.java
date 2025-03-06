@@ -20,23 +20,23 @@ public class AuthRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        //Creazioine del superadmin se non esiste
+        //Creazione del superadmin se non esiste
         Optional<AppUser> superAdminUser = appUserService.findByUsername("superadmin");
         if (superAdminUser.isEmpty()) {
             // Creiamo il superadmin con un ruolo speciale
-            appUserService.registerUser("superadmin", "superadminpassword", "superadmin@example.com", "Super", "Admin", Set.of(Role.ROLE_ADMIN, Role.ROLE_SUPERADMIN));
+            appUserService.registerUser("superadmin", "superadminpassword", "superadmin@example.com", "Super", "Admin", Set.of(Role.ADMIN, Role.SUPERADMIN));
         }
 
         // Creazione dell'utente admin se non esiste
         Optional<AppUser> adminUser = appUserService.findByUsername("admin");
         if (adminUser.isEmpty()) {
-            appUserService.registerUser("admin", "adminpassword", "admin@example.com", "Admin", "User", Set.of(Role.ROLE_ADMIN));
+            appUserService.registerUser("admin", "adminpassword", "admin@example.com", "Admin", "User", Set.of(Role.ADMIN));
         }
 
         // Creazione dell'utente user se non esiste
         Optional<AppUser> normalUser = appUserService.findByUsername("user");
         if (normalUser.isEmpty()) {
-            appUserService.registerUser("user", "userpassword", "user@example.com", "Normal", "User", Set.of(Role.ROLE_USER));
+            appUserService.registerUser("user", "userpassword", "user@example.com", "Normal", "User", Set.of(Role.USER));
         }
     }
 }
