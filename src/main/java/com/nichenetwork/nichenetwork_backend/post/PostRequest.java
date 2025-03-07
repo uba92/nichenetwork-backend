@@ -7,10 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PostRequest {
-
     @NotBlank(message = "Content is required")
     private String content;
 
@@ -18,5 +17,4 @@ public class PostRequest {
 
     @NotNull(message = "Community ID is required")
     private Long communityId;
-
 }

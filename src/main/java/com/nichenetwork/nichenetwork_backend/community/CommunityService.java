@@ -1,21 +1,23 @@
 package com.nichenetwork.nichenetwork_backend.community;
 
+import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
 import com.nichenetwork.nichenetwork_backend.exceptions.UnauthorizedException;
+import com.nichenetwork.nichenetwork_backend.post.Post;
+import com.nichenetwork.nichenetwork_backend.post.PostResponse;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.Role;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,9 @@ public class CommunityService {
 
         System.out.println("Admin autenticato: " + (adminUser != null ? adminUser.getEmail() : "null"));
         System.out.println("Ruolo dell'admin: " + (adminUser != null ? adminUser.getRole() : "null"));
+
+        if(communityRepository.existsByName(request.getName())) throw new EntityExistsException("Community with name " + request.getName() + " already exists.");
+
 
         if (adminUser == null || adminUser.getRole() == null) {
             throw new UnauthorizedException("Utente non autenticato o ruolo non assegnato");
@@ -57,31 +62,75 @@ public class CommunityService {
         owner.setRole(CommunityRole.OWNER);
         communityMemberRepository.save(owner);
 
+
         CommunityResponse response = new CommunityResponse(
                 community.getId(),
                 community.getName(),
                 community.getDescription(),
-                community.getCreatedAt().toString()
+                community.getCreatedAt()
+//                community.getPosts().stream()
+//                        .map(post -> new PostResponse(
+//                                post.getId(),
+//                                post.getContent(),
+//                                post.getImage(),
+//                                post.getUser().getUsername(),
+//                                post.getCreatedAt()
+//                        ))
+//                        .collect(Collectors.toList())
         );
 
         return response;
     }
 
 
+    @Transactional(readOnly = true)
     public CommunityResponse getCommunityById(Long id) {
-        Community community = communityRepository.findById(id)
+        Community community = communityRepository.findByIdWithPosts(id)
                 .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + id));
 
-        CommunityResponse response = new CommunityResponse(community.getId(), community.getName(), community.getDescription(), community.getCreatedAt().toString());
-        return response;
+
+        List<PostResponse> postResponses = community.getPosts().stream()
+                .map(post -> new PostResponse(
+                        post.getId(),
+                        post.getContent(),
+                        post.getImage(),
+                        post.getUser().getUsername(),
+                        post.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
+
+
+        // Mappiamo la community nei DTO
+        return new CommunityResponse(
+                community.getId(),
+                community.getName(),
+                community.getDescription(),
+                community.getCreatedAt()
+//                postResponses
+        );
     }
 
     public List<CommunityResponse> getAllCommunities() {
         List<Community> communities = communityRepository.findAll();
-        List<CommunityResponse> response = communities.stream()
-                .map(community -> new CommunityResponse(community.getId(), community.getName(), community.getDescription(), community.getCreatedAt().toString()))
+
+        // Mappiamo le communities nei DTO
+        return communities.stream()
+                .map(community -> new CommunityResponse(
+                        community.getId(),
+                        community.getName(),
+                        community.getDescription(),
+                        community.getCreatedAt()
+//                        community.getPosts().stream()
+//                                .map(post -> new PostResponse(
+//                                        post.getId(),
+//                                        post.getContent(),
+//                                        post.getImage(),
+//                                        post.getUser().getUsername(),
+//                                        post.getCreatedAt()
+//                                ))
+//                                .collect(Collectors.toList()) // Converti in lista
+                ))
                 .collect(Collectors.toList());
-        return response;
     }
 
 
@@ -94,7 +143,10 @@ public class CommunityService {
         community.setDescription(request.getDescription());
         communityRepository.save(community);
 
-        CommunityResponse response = new CommunityResponse(community.getId(), community.getName(), community.getDescription(), community.getCreatedAt().toString());
+        CommunityResponse response = new CommunityResponse(community.getId(),
+                community.getName(),
+                community.getDescription(),
+                community.getCreatedAt());
         return response;
     }
 

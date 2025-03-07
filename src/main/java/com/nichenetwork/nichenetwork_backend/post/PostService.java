@@ -1,19 +1,27 @@
 package com.nichenetwork.nichenetwork_backend.post;
 
+import com.nichenetwork.nichenetwork_backend.comment.Comment;
+import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
+import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
 import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
+import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +31,7 @@ public class PostService {
     private final CommunityRepository communityRepository;
     private final UserRepository userRepository;
     private final CommunityMemberRepository communityMemberRepository;
+    private final CommentRepository commentRepository;
 
 
 //    public PostResponse createPost(PostRequest request, AppUser appUser) {
@@ -87,8 +96,8 @@ public class PostService {
         return response;
     }
 
-    public Page<PostResponse> getAllPosts(Pageable pageable) {
-        Page<Post> posts = postRepository.findAll(pageable);
+    public Page<PostResponse> getAllPosts(int currentPage, int size, String sortBy) {
+        Page<Post> posts = postRepository.findAll(PageRequest.of(currentPage, size, Sort.by(sortBy)));
         Page<PostResponse> response = posts.map(this::responseFromEntity);
         return response;
     }
@@ -100,8 +109,8 @@ public class PostService {
     }
 
 //    recuperare tutti i post di un utente specifico
-    public Page<PostResponse> getAllPostsByUserId(Long userId, Pageable pageable) {
-        Page<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+    public Page<PostResponse> getAllPostsByUserId(Long userId, int currentPage, int size, String sortBy) {
+        Page<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
         if (posts.isEmpty()) {
             return null;
         }
@@ -110,8 +119,9 @@ public class PostService {
     }
 //
 //    recuperare tutti i post di una community specifica
-    public Page<PostResponse> getAllPostsByCommunityId(Long communityId, Pageable pageable) {
-        Page<Post> posts = postRepository.findByCommunityIdOrderByCreatedAtDesc(communityId, pageable);
+    @Transactional
+    public Page<PostResponse> getAllPostsByCommunityId(Long communityId, int currentPage, int size, String sortBy) {
+        Page<Post> posts = postRepository.findByCommunityIdOrderByCreatedAtDesc(communityId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
         if (posts.isEmpty()) {
             return null;
         }
@@ -154,4 +164,19 @@ public class PostService {
         return response;
     }
 
+    public Page<CommentResponse> getCommentsByPostId(Long postId, int page, int size, String sortBy) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
+
+        Page<Comment> comments = commentRepository.findByPostId(postId, PageRequest.of(page, size, Sort.by(sortBy)));
+
+        return comments.map(this::commentResponseFromEntity);
+    }
+
+    private CommentResponse commentResponseFromEntity(Comment comment) {
+        CommentResponse response = new CommentResponse();
+        response.setId(comment.getId());
+        response.setContent(comment.getContent());
+        response.setCreatedAt(comment.getCreatedAt());
+        return response;
+    }
 }

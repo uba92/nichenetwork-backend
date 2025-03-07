@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.comment;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import jakarta.persistence.*;
@@ -25,10 +26,12 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
+    @JsonIgnore
     private Post post;
 
     @Column(nullable = false, updatable = false)

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,8 +54,8 @@ public class UserService {
     }
 
 
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
+    public Page<UserResponse> getAllUsers(int currentPage, int size, String sortBy) {
+        return userRepository.findAll(PageRequest.of(currentPage, size, Sort.by(sortBy)))
                 .map(user -> new UserResponse(
                         user.getId(),
                         user.getUsername(),
@@ -63,8 +64,7 @@ public class UserService {
                         user.getLastName(),
                         user.getBio(),
                         user.getCreatedAt()
-                ))
-                .collect(Collectors.toList());
+                ));
     }
 
 
