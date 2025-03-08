@@ -11,6 +11,7 @@ import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
+import com.nichenetwork.nichenetwork_backend.user.UserResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -112,7 +113,7 @@ public class PostService {
     public Page<PostResponse> getAllPostsByUserId(Long userId, int currentPage, int size, String sortBy) {
         Page<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
         if (posts.isEmpty()) {
-            return null;
+            return Page.empty();
         }
         Page<PostResponse> response = posts.map(this::responseFromEntity);
         return response;
@@ -123,7 +124,7 @@ public class PostService {
     public Page<PostResponse> getAllPostsByCommunityId(Long communityId, int currentPage, int size, String sortBy) {
         Page<Post> posts = postRepository.findByCommunityIdOrderByCreatedAtDesc(communityId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
         if (posts.isEmpty()) {
-            return null;
+            return Page.empty();
         }
         Page<PostResponse> response = posts.map(this::responseFromEntity);
         return response;
@@ -159,9 +160,23 @@ public class PostService {
 
     //metodi aggiuntivi
     public PostResponse responseFromEntity(Post post) {
-        PostResponse response = new PostResponse();
-        BeanUtils.copyProperties(post, response);
-        return response;
+        UserResponse authorDTO = new UserResponse(
+                post.getUser().getId(),
+                post.getUser().getUsername(),
+                post.getUser().getAvatar(),
+                post.getUser().getFirstName(),
+                post.getUser().getLastName(),
+                post.getUser().getBio(),
+                post.getUser().getCreatedAt()
+        );
+
+        return new PostResponse(
+                post.getId(),
+                post.getContent(),
+                post.getImage(),
+                authorDTO,
+                post.getCreatedAt()
+        );
     }
 
     public Page<CommentResponse> getCommentsByPostId(Long postId, int page, int size, String sortBy) {

@@ -11,6 +11,7 @@ import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.Role;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
+import com.nichenetwork.nichenetwork_backend.user.UserResponse;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -94,7 +95,14 @@ public class CommunityService {
                         post.getId(),
                         post.getContent(),
                         post.getImage(),
-                        post.getUser().getUsername(),
+                        new UserResponse(
+                                post.getUser().getId(),
+                                post.getUser().getUsername(),
+                                post.getUser().getAvatar(),
+                                post.getUser().getFirstName(),
+                                post.getUser().getLastName(),
+                                post.getUser().getBio(),
+                                post.getUser().getCreatedAt()),
                         post.getCreatedAt()
                 ))
                 .collect(Collectors.toList());

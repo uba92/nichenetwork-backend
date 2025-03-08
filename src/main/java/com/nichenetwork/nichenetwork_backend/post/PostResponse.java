@@ -1,6 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.post;
 
 import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
+import com.nichenetwork.nichenetwork_backend.user.UserResponse;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,15 +17,15 @@ public class PostResponse {
     private Long id;
     private String content;
     private String image;
-    private String username;
+    private UserResponse author;
     private LocalDateTime createdAt;
 
 
-    public PostResponse(Long id, String content, String image, String string, @NotBlank(message = "Username is required") String username, List<CommentResponse> collect) {
+    public PostResponse(Long id, String content, String image, @NotBlank(message = "Username is required") UserResponse author, List<CommentResponse> collect) {
         this.id = id;
         this.content = content;
         this.image = image;
-        this.username = username;
+        this.author = author;
         this.createdAt = LocalDateTime.now();
     }
 }

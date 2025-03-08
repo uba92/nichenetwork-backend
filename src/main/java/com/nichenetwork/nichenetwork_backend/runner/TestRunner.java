@@ -48,6 +48,10 @@ public class TestRunner implements CommandLineRunner {
         User user = new User();
         user.setUsername(appUser.getUsername());
         user.setEmail(appUser.getEmail());
+        user.setFirstName(faker.name().firstName());
+        user.setLastName(faker.name().lastName());
+        user.setAvatar(faker.avatar().image());
+        user.setBio(faker.lorem().sentence());
         userRepository.save(user);
 
         System.out.println("---Creando le communities---");
