@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.user;
 
+import com.nichenetwork.nichenetwork_backend.security.auth.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,4 +16,5 @@ public class UserResponse {
     private String lastName;
     private String bio;
     private LocalDateTime createdAt;
+    private String email;
 }

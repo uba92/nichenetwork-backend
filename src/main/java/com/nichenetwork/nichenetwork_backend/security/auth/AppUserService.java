@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Optional;
@@ -106,6 +107,7 @@ public class AppUserService {
 
 
     //crea un admin
+    @Transactional
     public ResponseEntity<String> createAdminUser(AdminUserRequest request) {
         AppUser appUser = new AppUser();
         appUser.setUsername(request.getUsername());
@@ -113,6 +115,15 @@ public class AppUserService {
         appUser.setEmail(request.getEmail());
         appUser.setRoles(Set.of(Role.ADMIN));
         appUserRepository.save(appUser);
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setBio(null);
+        user.setAvatar(null);
+        userRepository.save(user);
         return ResponseEntity.ok("Admin successfully created");
 
     }

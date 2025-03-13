@@ -36,7 +36,7 @@ public class CommunityService {
         System.out.println("Admin autenticato: " + (adminUser != null ? adminUser.getEmail() : "null"));
         System.out.println("Ruolo dell'admin: " + (adminUser != null ? adminUser.getRole() : "null"));
 
-        if(communityRepository.existsByName(request.getName())) throw new EntityExistsException("Community with name " + request.getName() + " already exists.");
+//        if(communityRepository.existsByName(request.getName())) throw new EntityExistsException("Community with name " + request.getName() + " already exists.");
 
 
         if (adminUser == null || adminUser.getRole() == null) {
@@ -102,7 +102,8 @@ public class CommunityService {
                                 post.getUser().getFirstName(),
                                 post.getUser().getLastName(),
                                 post.getUser().getBio(),
-                                post.getUser().getCreatedAt()),
+                                post.getUser().getCreatedAt(),
+                        post.getUser().getEmail()),
                         post.getCreatedAt()
                 ))
                 .collect(Collectors.toList());

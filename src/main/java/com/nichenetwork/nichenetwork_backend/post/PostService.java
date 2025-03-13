@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.post;
 
+import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
 import com.nichenetwork.nichenetwork_backend.comment.Comment;
 import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
 import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
@@ -8,21 +9,23 @@ import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
-import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import com.nichenetwork.nichenetwork_backend.user.UserResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final CommentRepository commentRepository;
+    private final CloudinaryService cloudinaryService;
 
 
 //    public PostResponse createPost(PostRequest request, AppUser appUser) {
@@ -62,7 +66,7 @@ public class PostService {
 //    }
 
     @Transactional
-    public PostResponse createPost(PostRequest request, String userUsername) {
+    public PostResponse createPost(PostRequest request, String userUsername, String imageUrl) throws IOException {
 
         System.out.println("Request per post: " + request);
 
@@ -75,6 +79,24 @@ public class PostService {
         post.setCommunity(community);
         post.setUser(user);
 
+        String postImageUrl = null;
+
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            post.setImage(imageUrl);
+        } else if (request.getImage() != null && !request.getImage().isEmpty()) {
+            if (isValidImageUrl(request.getImage())) {
+                Map uploadResult = cloudinaryService.uploadImageFromUrl(request.getImage());
+                postImageUrl = (String) uploadResult.get("secure_url");
+                post.setImage(postImageUrl);
+            }
+        } else {
+            throw new BadRequestException("Immagini non valide");
+        }
+
+        if (postImageUrl != null) {
+            post.setImage(postImageUrl);
+        }
+
 
         System.out.println("Post creato: " + post);
         postRepository.save(post);
@@ -84,16 +106,6 @@ public class PostService {
         PostResponse response = responseFromEntity(post);
 
         System.out.println("Response del post " + response);
-        return response;
-    }
-
-    @Transactional
-    public PostResponse updatePost(Long id, PostRequest request) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post not found with id " + id));
-        BeanUtils.copyProperties(request, post);
-        postRepository.save(post);
-
-        PostResponse response = responseFromEntity(post);
         return response;
     }
 
@@ -167,7 +179,8 @@ public class PostService {
                 post.getUser().getFirstName(),
                 post.getUser().getLastName(),
                 post.getUser().getBio(),
-                post.getUser().getCreatedAt()
+                post.getUser().getCreatedAt(),
+                post.getUser().getEmail()
         );
 
         return new PostResponse(
@@ -194,4 +207,20 @@ public class PostService {
         response.setCreatedAt(comment.getCreatedAt());
         return response;
     }
+
+    private boolean isValidImageUrl(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("HEAD");
+            int responseCode = connection.getResponseCode();
+
+            // Controlla se l'URL è raggiungibile e ha un'estensione immagine valida
+            return responseCode == 200 && imageUrl.matches(".*\\.(jpg|jpeg|png|gif|bmp)$");
+        } catch (Exception e) {
+            System.out.println("❌ URL non valido o non raggiungibile: " + imageUrl);
+            return false;
+        }
+    }
+
 }

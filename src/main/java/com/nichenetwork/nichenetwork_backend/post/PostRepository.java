@@ -14,5 +14,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Page<Post> findByCommunityIdOrderByCreatedAtDesc(Long communityId, Pageable pageable);
 
-    List<Post> findByCommunityId(Long id);
 }

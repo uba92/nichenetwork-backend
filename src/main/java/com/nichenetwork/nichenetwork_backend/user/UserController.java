@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -32,7 +34,7 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/users")
+    @GetMapping
     public ResponseEntity<Page<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0") int currentPage, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "username") String sortBy) {
         Page<UserResponse> users = userService.getAllUsers(currentPage, size, sortBy);
         return users.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(users);
@@ -65,12 +67,15 @@ public class UserController {
         return ResponseEntity.ok("Password aggiornata con successo");
     }
 
-    @PutMapping("/changeAvatar")
-    public ResponseEntity<User> changeAvatar(@AuthenticationPrincipal AppUser appUser, @RequestBody ChangeAvatarRequest request) {
-        String username = appUser.getUsername();
-        userService.changeAvatar(username, request);
-        User updatedUser = userService.findByUsername(username);
-        return ResponseEntity.ok(updatedUser);
+    @PutMapping(value = "/changeAvatar", consumes = "multipart/form-data")
+    public ResponseEntity<User> changeAvatar(@AuthenticationPrincipal AppUser appUser, @RequestParam(value = "file", required = false) MultipartFile file, @RequestParam(value = "imageUrl", required = false) String imageUrl) {
+        try {
+            String username = appUser.getUsername();
+            User user = userService.changeAvatar(username, file, imageUrl);
+            return ResponseEntity.ok(user);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @DeleteMapping("/deleteUser")
@@ -119,7 +124,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userService.findById(id);

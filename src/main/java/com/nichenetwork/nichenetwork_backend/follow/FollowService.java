@@ -80,7 +80,8 @@ public class FollowService {
                         follow.getFollower().getFirstName(),
                         follow.getFollower().getLastName(),
                         follow.getFollower().getBio(),
-                        follow.getFollower().getCreatedAt()
+                        follow.getFollower().getCreatedAt(),
+                        follow.getFollower().getEmail()
                 ))
                 .collect(Collectors.toList());
     }
@@ -97,7 +98,8 @@ public class FollowService {
                         follow.getFollowing().getFirstName(),
                         follow.getFollowing().getLastName(),
                         follow.getFollowing().getBio(),
-                        follow.getFollowing().getCreatedAt()
+                        follow.getFollowing().getCreatedAt(),
+                        follow.getFollowing().getEmail()
                 ))
                 .collect(Collectors.toList());
     }

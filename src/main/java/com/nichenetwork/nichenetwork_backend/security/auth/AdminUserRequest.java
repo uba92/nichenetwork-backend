@@ -21,4 +21,10 @@ public class AdminUserRequest {
     @Email(message = "Invalid email format")
     private String email;
 
+    @NotBlank(message = "First name is required")
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    private String lastName;
+
 }

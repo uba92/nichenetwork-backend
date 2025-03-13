@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.user;
 
+import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUserRepository;
@@ -13,8 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppUserRepository appUserRepository;
+    private final CloudinaryService cloudinaryService;
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
@@ -43,7 +48,8 @@ public class UserService {
                         user.getFirstName(),
                         user.getLastName(),
                         user.getBio(),
-                        user.getCreatedAt()
+                        user.getCreatedAt(),
+                        user.getEmail()
                 ));
     }
 
@@ -63,7 +69,8 @@ public class UserService {
                         user.getFirstName(),
                         user.getLastName(),
                         user.getBio(),
-                        user.getCreatedAt()
+                        user.getCreatedAt(),
+                        user.getEmail()
                 ));
     }
 
@@ -129,13 +136,68 @@ public class UserService {
         return userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con email " + email));
     }
 
-    public String changeAvatar(String username, ChangeAvatarRequest request) {
+    public User changeAvatar(String username, MultipartFile file, String imageUrl) throws IOException {
         User user = findByUsername(username);
-        if (request.getAvatar() == null) {
-            throw new BadRequestException("---L'avatar non é valido!---");
+
+        // 🔹 LOG DI DEBUG
+        System.out.println("📥 File ricevuto: " + (file != null ? file.getOriginalFilename() : "Nessun file"));
+        System.out.println("📥 URL ricevuto: " + imageUrl);
+
+        // 🔹 CONTROLLIAMO SE IL FILE O L'URL SONO PRESENTI
+        if ((file == null || file.isEmpty()) && (imageUrl == null || imageUrl.isBlank())) {
+            System.out.println("❌ Nessun file o URL valido ricevuto!");
+            throw new BadRequestException("--- L'avatar non é valido! ---");
         }
-        user.setAvatar(request.getAvatar());
+
+        // 🔹 SE C'È UN AVATAR PRECEDENTE, LO ELIMINIAMO DA CLOUDINARY
+        if (user.getAvatar() != null) {
+            String publicId = extractPublicId(user.getAvatar());
+            System.out.println("🔹 Public ID da eliminare: " + publicId);
+            cloudinaryService.deleteImage(publicId);
+        }
+
+        String newAvatar = null;
+
+        // 🔹 UPLOAD DA FILE LOCALE
+        if (file != null && !file.isEmpty()) {
+            System.out.println("🟢 Upload da file locale in corso...");
+            Map uploadResult = cloudinaryService.uploadImage(file);
+            newAvatar = (String) uploadResult.get("secure_url");
+            System.out.println("✅ Nuovo avatar da file caricato: " + newAvatar);
+
+            // 🔹 UPLOAD DA URL
+        } else if (imageUrl != null && !imageUrl.isBlank()) {
+            System.out.println("🟡 Upload da URL rilevato...");
+            System.out.println("🔹 Tentativo di upload da URL: " + imageUrl);
+            Map result = cloudinaryService.uploadImageFromUrl(imageUrl);
+            newAvatar = (String) result.get("secure_url");
+            System.out.println("✅ Nuovo avatar da URL caricato: " + newAvatar);
+        }
+
+        // 🔹 AGGIORNIAMO L'AVATAR DELL'UTENTE
+        user.setAvatar(newAvatar);
         userRepository.save(user);
-        return "Avatar aggiornato con successo";
+        System.out.println("🟢 Avatar aggiornato con successo per l'utente: " + username);
+
+        return user;
+    }
+
+
+    private String extractPublicId(String avatarUrl) {
+        try {
+            String[] parts = avatarUrl.split("/");
+            String fileName = parts[parts.length - 1];
+            String fileWithoutExtension = fileName.substring(0, fileName.lastIndexOf("."));
+
+            if(avatarUrl.contains("uploads/")) {
+                return "uploads/" + fileWithoutExtension;
+            }
+            return fileWithoutExtension;
+        } catch (Exception e) {
+            System.out.println("⚠️ Errore durante l'extrazione del public ID: " + e.getMessage());
+            return null;
+        }
+
+
     }
 }

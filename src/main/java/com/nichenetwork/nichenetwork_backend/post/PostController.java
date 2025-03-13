@@ -1,6 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
 import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -18,11 +19,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -31,23 +34,41 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final CloudinaryService cloudinaryService;
 
     @PostMapping
-    public ResponseEntity<PostResponse> createPost(HttpServletRequest request) throws IOException {
+    public ResponseEntity<PostResponse> createPost(HttpServletRequest request, @RequestParam(value = "file", required = false)MultipartFile file) throws IOException {
+
+        //corpo della richiesta
         String rawBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
         System.out.println("🔍 Raw request body: " + rawBody);
 
-
-
+        //trasformo la richiesta da JSON a oggetto PostRequest
         ObjectMapper objectMapper = new ObjectMapper();
         PostRequest postRequest = objectMapper.readValue(rawBody, PostRequest.class);
         System.out.println("📌 PostRequest deserializzata: " + postRequest);
 
+        //recupero utente autenticato
         String userUsername = request.getUserPrincipal().getName();
         System.out.println("📌 Utente autenticato che sta creando il post: " + userUsername);
 
+        String postImageUrl = null;
 
-        PostResponse response = postService.createPost(postRequest, userUsername);
+        if (file != null && !file.isEmpty()) {
+            System.out.println("🟢 Upload da file locale in corso...");
+            Map uploadResult = cloudinaryService.uploadImage(file);
+            postImageUrl = (String) uploadResult.get("secure_url");
+            System.out.println("✅ Nuovo avatar da file caricato: " + postImageUrl);
+        } else if (postRequest.getImage() != null && !postRequest.getImage().isBlank()) {
+            System.out.println("🟢 Upload da URL in corso...");
+            Map uploadResult = cloudinaryService.uploadImageFromUrl(postRequest.getImage());
+            postImageUrl = (String) uploadResult.get("secure_url");
+            System.out.println("✅ Nuovo avatar da URL caricato: " + postImageUrl);
+
+        }
+
+        //creo il post e lo salvo
+        PostResponse response = postService.createPost(postRequest, userUsername, postImageUrl);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -67,12 +88,6 @@ public class PostController {
 //        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 //    }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("#appUser.username == #username")
-    public ResponseEntity<PostResponse> updatePost(@PathVariable Long id, @RequestBody PostRequest request, @AuthenticationPrincipal AppUser appUser, @RequestParam String username) {
-        PostResponse response = postService.updatePost(id, request);
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getAllPosts(@RequestParam(defaultValue = "0") int currentPage, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "createdAt") String sortBy) {
