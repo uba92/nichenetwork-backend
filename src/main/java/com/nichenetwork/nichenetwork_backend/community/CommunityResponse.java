@@ -18,4 +18,5 @@ public class CommunityResponse {
     private String description;
     private LocalDateTime createdAt;
     private String imageUrl;
+    private String color;
 }

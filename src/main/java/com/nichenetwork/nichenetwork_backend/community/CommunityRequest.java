@@ -17,4 +17,6 @@ public class CommunityRequest {
     private String description;
 
     private String imageUrl;
+
+    private String color;
 }

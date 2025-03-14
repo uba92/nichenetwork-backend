@@ -27,7 +27,7 @@ public class CommunityController {
                                                              @RequestParam(value = "image", required = false) MultipartFile imageFile,
                                                              @AuthenticationPrincipal AppUser adminUser) throws IOException {
 
-        CommunityRequest request = new CommunityRequest(name, description, null);
+        CommunityRequest request = new CommunityRequest(name, description, null, null);
         CommunityResponse response = communityService.createCommunity(request, adminUser, imageFile);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

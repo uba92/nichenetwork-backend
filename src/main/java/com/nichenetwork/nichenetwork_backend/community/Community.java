@@ -32,6 +32,8 @@ public class Community {
 
     private String imageUrl;
 
+    private String color;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

@@ -49,6 +49,7 @@ public class CommunityService {
         Community community = new Community();
         community.setName(request.getName());
         community.setDescription(request.getDescription());
+        community.setColor(request.getColor());
 
         if (imageFile != null && !imageFile.isEmpty()) {
             Map uploadResult = cloudinaryService.uploadImage(imageFile);
@@ -76,7 +77,8 @@ public class CommunityService {
                 community.getName(),
                 community.getDescription(),
                 community.getCreatedAt(),
-                community.getImageUrl()
+                community.getImageUrl(),
+                community.getColor()
         );
 
         return response;
@@ -114,7 +116,8 @@ public class CommunityService {
                 community.getName(),
                 community.getDescription(),
                 community.getCreatedAt(),
-                community.getImageUrl()
+                community.getImageUrl(),
+                community.getColor()
 //                postResponses
         );
     }
@@ -129,17 +132,8 @@ public class CommunityService {
                         community.getName(),
                         community.getDescription(),
                         community.getCreatedAt(),
-                        community.getImageUrl()
-//                        community.getPosts().stream()
-//                                .map(post -> new PostResponse(
-//                                        post.getId(),
-//                                        post.getContent(),
-//                                        post.getImage(),
-//                                        post.getUser().getUsername(),
-//                                        post.getCreatedAt()
-//                                ))
-//                                .collect(Collectors.toList()) // Converti in lista
-                ))
+                        community.getImageUrl(),
+                        community.getColor()))
                 .collect(Collectors.toList());
     }
 
@@ -157,7 +151,8 @@ public class CommunityService {
                 community.getName(),
                 community.getDescription(),
                 community.getCreatedAt(),
-                community.getImageUrl());
+                community.getImageUrl(),
+                community.getColor());
         return response;
     }
 
@@ -179,7 +174,8 @@ public class CommunityService {
                         community.getName(),
                         community.getDescription(),
                         community.getCreatedAt(),
-                        community.getImageUrl()
+                        community.getImageUrl(),
+                        community.getColor()
                 ))
                 .collect(Collectors.toList());
     }
@@ -199,7 +195,8 @@ public class CommunityService {
                         community.getName(),
                         community.getDescription(),
                         community.getCreatedAt(),
-                        community.getImageUrl()
+                        community.getImageUrl(),
+                        community.getColor()
                 ))
                 .collect(Collectors.toList());
     }
