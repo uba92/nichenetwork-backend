@@ -1,6 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.communityMember;
 
 import com.nichenetwork.nichenetwork_backend.community.Community;
+import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -18,4 +19,6 @@ public interface CommunityMemberRepository extends JpaRepository<CommunityMember
     boolean existsByUserAndCommunity(User user, Community community);
 
     void deleteByUserAndCommunity(User user, Community community);
+
+    List<CommunityMember> findByUser(User user);
 }

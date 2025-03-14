@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.user;
 
+import com.nichenetwork.nichenetwork_backend.community.CommunityResponse;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUserService;
 import com.nichenetwork.nichenetwork_backend.security.auth.Role;
@@ -32,6 +33,13 @@ public class UserController {
         }
 
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/me/communities")
+    public ResponseEntity<List<CommunityResponse>> getMyCommunities(@AuthenticationPrincipal AppUser appUser) {
+        String username = appUser.getUsername();
+        List<CommunityResponse> communities = userService.getMyCommunities(username);
+        return ResponseEntity.ok(communities);
     }
 
     @GetMapping

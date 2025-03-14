@@ -1,6 +1,8 @@
 package com.nichenetwork.nichenetwork_backend.user;
 
 import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
+import com.nichenetwork.nichenetwork_backend.community.CommunityResponse;
+import com.nichenetwork.nichenetwork_backend.community.CommunityService;
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUserRepository;
@@ -29,6 +31,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AppUserRepository appUserRepository;
     private final CloudinaryService cloudinaryService;
+    private final CommunityService communityService;
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
@@ -199,5 +202,10 @@ public class UserService {
         }
 
 
+    }
+
+    public List<CommunityResponse> getMyCommunities(String username) {
+        AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
+        return communityService.getMyCommunities(appUser);
     }
 }

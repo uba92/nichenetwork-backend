@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -86,10 +87,19 @@ public class CommunityMemberService {
     }
 
 
-    public List<CommunityMember> getCommunityMembers(Long communityId) {
+    public List<CommunityMemberDTO> getCommunityMembers(Long communityId) {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new EntityNotFoundException("Community not found"));
-        return communityMemberRepository.findByCommunity(community);
+        List<CommunityMember> members = communityMemberRepository.findByCommunity(community);
+
+        return members.stream().map(member -> new CommunityMemberDTO(
+                member.getUser().getId(),
+                member.getUser().getUsername(),
+                member.getUser().getFirstName(),
+                member.getUser().getLastName(),
+                member.getUser().getEmail(),
+                member.getRole()
+        )).collect(Collectors.toList());
     }
 
     @Transactional

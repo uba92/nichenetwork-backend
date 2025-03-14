@@ -9,7 +9,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/community-members")
 @RequiredArgsConstructor
-public class CommunityMemberController {
+public class   CommunityMemberController {
 
     private final CommunityMemberService communityMemberService;
 
@@ -26,7 +26,7 @@ public class CommunityMemberController {
     }
 
     @GetMapping("/{communityId}/members")
-    public ResponseEntity<List<CommunityMember>> getCommunityMembers(@PathVariable Long communityId) {
+    public ResponseEntity<List<CommunityMemberDTO>> getCommunityMembers(@PathVariable Long communityId) {
         return ResponseEntity.ok(communityMemberService.getCommunityMembers(communityId));
     }
 

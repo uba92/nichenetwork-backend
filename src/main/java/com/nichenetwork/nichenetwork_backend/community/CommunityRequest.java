@@ -15,4 +15,6 @@ public class CommunityRequest {
 
     @NotBlank(message = "Description is required")
     private String description;
+
+    private String imageUrl;
 }

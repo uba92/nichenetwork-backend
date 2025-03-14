@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -16,11 +18,17 @@ import java.util.List;
 public class CommunityController {
 
     private final CommunityService communityService;
+    private final CommunityRepository communityRepository;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CommunityResponse> createCommunity(@RequestBody CommunityRequest request, @AuthenticationPrincipal AppUser adminUser) {
-        CommunityResponse response = communityService.createCommunity(request, adminUser);
+    public ResponseEntity<CommunityResponse> createCommunity(@RequestParam("name") String name,
+                                                             @RequestParam("description") String description,
+                                                             @RequestParam(value = "image", required = false) MultipartFile imageFile,
+                                                             @AuthenticationPrincipal AppUser adminUser) throws IOException {
+
+        CommunityRequest request = new CommunityRequest(name, description, null);
+        CommunityResponse response = communityService.createCommunity(request, adminUser, imageFile);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -48,5 +56,11 @@ public class CommunityController {
     public ResponseEntity<String> deleteCommunity(@PathVariable Long id) {
         communityService.deleteCommunity(id);
         return ResponseEntity.status(HttpStatus.OK).body("Community deleted successfully");
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<CommunityResponse>> searchCommunities(@RequestParam String query) {
+        List<CommunityResponse> response = communityService.searchCommunities(query);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

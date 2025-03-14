@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.community;
 
+import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
 import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
@@ -17,9 +18,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,15 +33,10 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final UserRepository userRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Transactional
-    public CommunityResponse createCommunity(CommunityRequest request, AppUser adminUser) {
-
-        System.out.println("Admin autenticato: " + (adminUser != null ? adminUser.getEmail() : "null"));
-        System.out.println("Ruolo dell'admin: " + (adminUser != null ? adminUser.getRole() : "null"));
-
-//        if(communityRepository.existsByName(request.getName())) throw new EntityExistsException("Community with name " + request.getName() + " already exists.");
-
+    public CommunityResponse createCommunity(CommunityRequest request, AppUser adminUser, MultipartFile imageFile) throws IOException {
 
         if (adminUser == null || adminUser.getRole() == null) {
             throw new UnauthorizedException("Utente non autenticato o ruolo non assegnato");
@@ -50,6 +49,14 @@ public class CommunityService {
         Community community = new Community();
         community.setName(request.getName());
         community.setDescription(request.getDescription());
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            Map uploadResult = cloudinaryService.uploadImage(imageFile);
+            String imageUrl = (String) uploadResult.get("secure_url");
+            community.setImageUrl(imageUrl);
+        } else {
+            community.setImageUrl("https://res.cloudinary.com/dh5lzyq0h/image/upload/v1741883395/ynukn6mxyp9stdujryf6.jpg");
+        }
         communityRepository.save(community);
 
 
@@ -68,16 +75,8 @@ public class CommunityService {
                 community.getId(),
                 community.getName(),
                 community.getDescription(),
-                community.getCreatedAt()
-//                community.getPosts().stream()
-//                        .map(post -> new PostResponse(
-//                                post.getId(),
-//                                post.getContent(),
-//                                post.getImage(),
-//                                post.getUser().getUsername(),
-//                                post.getCreatedAt()
-//                        ))
-//                        .collect(Collectors.toList())
+                community.getCreatedAt(),
+                community.getImageUrl()
         );
 
         return response;
@@ -114,7 +113,8 @@ public class CommunityService {
                 community.getId(),
                 community.getName(),
                 community.getDescription(),
-                community.getCreatedAt()
+                community.getCreatedAt(),
+                community.getImageUrl()
 //                postResponses
         );
     }
@@ -128,7 +128,8 @@ public class CommunityService {
                         community.getId(),
                         community.getName(),
                         community.getDescription(),
-                        community.getCreatedAt()
+                        community.getCreatedAt(),
+                        community.getImageUrl()
 //                        community.getPosts().stream()
 //                                .map(post -> new PostResponse(
 //                                        post.getId(),
@@ -155,7 +156,8 @@ public class CommunityService {
         CommunityResponse response = new CommunityResponse(community.getId(),
                 community.getName(),
                 community.getDescription(),
-                community.getCreatedAt());
+                community.getCreatedAt(),
+                community.getImageUrl());
         return response;
     }
 
@@ -169,4 +171,36 @@ public class CommunityService {
         return ("Community deleted successfully");
     }
 
+    public List<CommunityResponse> searchCommunities(String query) {
+        List<Community> communities = communityRepository.searchCommunities(query);
+        return communities.stream()
+                .map(community -> new CommunityResponse(
+                        community.getId(),
+                        community.getName(),
+                        community.getDescription(),
+                        community.getCreatedAt(),
+                        community.getImageUrl()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<CommunityResponse> getMyCommunities(AppUser appUser) {
+
+        User user = userRepository.findByEmail(appUser.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email " + appUser.getEmail()));
+        List<CommunityMember> communityMembers = communityMemberRepository.findByUser(user);
+        List<Community> communities = new ArrayList<>();
+        for (CommunityMember communityMember : communityMembers) {
+            communities.add(communityMember.getCommunity());
+        }
+        return communities.stream()
+                .map(community -> new CommunityResponse(
+                        community.getId(),
+                        community.getName(),
+                        community.getDescription(),
+                        community.getCreatedAt(),
+                        community.getImageUrl()
+                ))
+                .collect(Collectors.toList());
+    }
 }

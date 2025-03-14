@@ -17,6 +17,5 @@ public class CommunityResponse {
     private String name;
     private String description;
     private LocalDateTime createdAt;
-//    private List<PostResponse> posts;
-
+    private String imageUrl;
 }

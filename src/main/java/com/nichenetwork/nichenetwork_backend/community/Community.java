@@ -30,6 +30,8 @@ public class Community {
     @Column(nullable = false)
     private String description;
 
+    private String imageUrl;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

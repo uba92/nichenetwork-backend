@@ -65,11 +65,11 @@ public class TestRunner implements CommandLineRunner {
            community.setName(faker.internet().domainName());
            community.setDescription(faker.lorem().sentence());
 
-           CommunityRequest request = new CommunityRequest(community.getName(), community.getDescription());
+           CommunityRequest request = new CommunityRequest(community.getName(), community.getDescription(), null);
 
            AppUser appUser = appUserRepository.findByUsername("admin").orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username admin"));
 
-           communityService.createCommunity(request, appUser);
+           communityService.createCommunity(request, appUser, null);
        }
         System.out.println("Communities salvate nel Database ");
 
