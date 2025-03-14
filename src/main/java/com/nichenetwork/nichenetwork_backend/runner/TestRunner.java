@@ -3,14 +3,11 @@ package com.nichenetwork.nichenetwork_backend.runner;
 import com.github.javafaker.Faker;
 import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
 import com.nichenetwork.nichenetwork_backend.community.*;
-import com.nichenetwork.nichenetwork_backend.config.FakerConfig;
 import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUserRepository;
-import com.nichenetwork.nichenetwork_backend.security.auth.Role;
 import com.nichenetwork.nichenetwork_backend.user.User;
-import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import com.nichenetwork.nichenetwork_backend.user.UserResponse;
 import com.nichenetwork.nichenetwork_backend.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,7 +20,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Order(2)
 @Component
