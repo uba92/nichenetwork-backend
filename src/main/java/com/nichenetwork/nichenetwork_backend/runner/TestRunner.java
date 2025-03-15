@@ -90,14 +90,6 @@ public class TestRunner implements CommandLineRunner {
 
            Long communityId = (long) faker.number().numberBetween(1, communities.size());
 
-//           CommunityResponse randomCommunityResponse = communityService.getCommunityById(communityId);
-//
-//           Community randomCommunity = new Community();
-//           randomCommunity.setId(randomCommunityResponse.getId());
-//           randomCommunity.setName(randomCommunityResponse.getName());
-//           randomCommunity.setDescription(randomCommunityResponse.getDescription());
-//           randomCommunity.setCreatedAt(randomCommunityResponse.getCreatedAt());
-//           randomCommunity.setPosts(postRepository.findByCommunityId(randomCommunityResponse.getId()));
 
            Community randomCommunity = communityRepository.findById(communityId)
                    .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + communityId));

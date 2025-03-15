@@ -25,9 +25,10 @@ public class CommunityController {
     public ResponseEntity<CommunityResponse> createCommunity(@RequestParam("name") String name,
                                                              @RequestParam("description") String description,
                                                              @RequestParam(value = "image", required = false) MultipartFile imageFile,
+                                                             @RequestParam(value = "color", required = false) String color,
                                                              @AuthenticationPrincipal AppUser adminUser) throws IOException {
 
-        CommunityRequest request = new CommunityRequest(name, description, null, null);
+        CommunityRequest request = new CommunityRequest(name, description, null, color);
         CommunityResponse response = communityService.createCommunity(request, adminUser, imageFile);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -1,93 +1,61 @@
 package com.nichenetwork.nichenetwork_backend.post;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
 import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
+import com.nichenetwork.nichenetwork_backend.exceptions.UnauthorizedException;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.StreamUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
-@Slf4j
 public class PostController {
 
     private final PostService postService;
     private final CloudinaryService cloudinaryService;
 
-    @PostMapping
-    public ResponseEntity<PostResponse> createPost(HttpServletRequest request, @RequestParam(value = "file", required = false)MultipartFile file) throws IOException {
 
-        //corpo della richiesta
-        String rawBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
-        System.out.println("🔍 Raw request body: " + rawBody);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostResponse> createPost(
+            @RequestParam("content") String content,
+            @RequestParam("communityId") Long communityId,
+            @RequestParam(value = "image", required = false) MultipartFile file,
+            @AuthenticationPrincipal AppUser appUser) throws IOException {
 
-        //trasformo la richiesta da JSON a oggetto PostRequest
-        ObjectMapper objectMapper = new ObjectMapper();
-        PostRequest postRequest = objectMapper.readValue(rawBody, PostRequest.class);
-        System.out.println("📌 PostRequest deserializzata: " + postRequest);
+        System.out.println("🔍 SecurityContextHolder: " + SecurityContextHolder.getContext().getAuthentication());
+        System.out.println("🔍 @AuthenticationPrincipal: " + appUser);
 
-        //recupero utente autenticato
-        String userUsername = request.getUserPrincipal().getName();
-        System.out.println("📌 Utente autenticato che sta creando il post: " + userUsername);
-
-        String postImageUrl = null;
-
-        if (file != null && !file.isEmpty()) {
-            System.out.println("🟢 Upload da file locale in corso...");
-            Map uploadResult = cloudinaryService.uploadImage(file);
-            postImageUrl = (String) uploadResult.get("secure_url");
-            System.out.println("✅ Nuovo avatar da file caricato: " + postImageUrl);
-        } else if (postRequest.getImage() != null && !postRequest.getImage().isBlank()) {
-            System.out.println("🟢 Upload da URL in corso...");
-            Map uploadResult = cloudinaryService.uploadImageFromUrl(postRequest.getImage());
-            postImageUrl = (String) uploadResult.get("secure_url");
-            System.out.println("✅ Nuovo avatar da URL caricato: " + postImageUrl);
-
+        if (appUser == null) {
+            throw new UnauthorizedException("Utente non autenticato");
         }
 
-        //creo il post e lo salvo
-        PostResponse response = postService.createPost(postRequest, userUsername, postImageUrl);
+        PostRequest postRequest = new PostRequest();
+        postRequest.setContent(content);
+        postRequest.setCommunityId(communityId);
+
+        String postImageUrl = null;
+        if (file != null && !file.isEmpty()) {
+            Map uploadResult = cloudinaryService.uploadImage(file);
+            postImageUrl = (String) uploadResult.get("secure_url");
+        }
+
+        PostResponse response = postService.createPost(postRequest, appUser.getUsername(), postImageUrl);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
-//    @PostMapping("/create")
-//    public ResponseEntity<PostResponse> createPost(
-//            @Valid @RequestBody PostRequest request,
-//            @AuthenticationPrincipal AppUser appUser) {
-//
-//        System.out.println("Request ricevuta dal controller: " + request);
-//        if (appUser == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-//        }
-//
-//        System.out.println("📌 Utente autenticato che sta creando il post: " + appUser.getEmail());
-//
-//        PostResponse response = postService.createPost(request, appUser);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-//    }
-
 
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getAllPosts(@RequestParam(defaultValue = "0") int currentPage, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "createdAt") String sortBy) {

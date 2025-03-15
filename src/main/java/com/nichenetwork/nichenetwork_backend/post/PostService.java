@@ -39,32 +39,6 @@ public class PostService {
     private final CloudinaryService cloudinaryService;
 
 
-//    public PostResponse createPost(PostRequest request, AppUser appUser) {
-//        System.out.println("📌 Richiesta ricevuta nel Service: " + request);
-//        System.out.println("📌 Utente autenticato: " + appUser.getEmail());
-//
-//        // Troviamo la community
-//        Community community = communityRepository.findById(request.getCommunityId())
-//                .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + request.getCommunityId()));
-//
-//        // Troviamo l'utente dal DB per collegarlo al post
-//        User user = userRepository.findByEmail(appUser.getEmail())
-//                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-//
-//        // Creiamo il post e assegniamo i dati
-//        Post post = new Post();
-//        post.setContent(request.getContent());
-//        post.setImage(request.getImage());
-//        post.setCommunity(community);
-//        post.setUser(user);
-//
-//        // Salviamo il post
-//        postRepository.save(post);
-//        System.out.println("✅ Post salvato con ID: " + post.getId());
-//
-//        return responseFromEntity(post);
-//    }
-
     @Transactional
     public PostResponse createPost(PostRequest request, String userUsername, String imageUrl) throws IOException {
 
@@ -73,29 +47,25 @@ public class PostService {
         User user = userRepository.findByUsername(userUsername).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         Community community = communityRepository.findById(request.getCommunityId()).orElseThrow(() -> new EntityNotFoundException("Community not found with id " + request.getCommunityId()));
+
         Post post = new Post();
         post.setContent(request.getContent());
-        post.setImage(request.getImage());
         post.setCommunity(community);
         post.setUser(user);
 
         String postImageUrl = null;
 
         if (imageUrl != null && !imageUrl.isBlank()) {
-            post.setImage(imageUrl);
-        } else if (request.getImage() != null && !request.getImage().isEmpty()) {
+            postImageUrl = imageUrl;
+        }
+        else if (request.getImage() != null && !request.getImage().isEmpty()) {
             if (isValidImageUrl(request.getImage())) {
                 Map uploadResult = cloudinaryService.uploadImageFromUrl(request.getImage());
                 postImageUrl = (String) uploadResult.get("secure_url");
-                post.setImage(postImageUrl);
             }
-        } else {
-            throw new BadRequestException("Immagini non valide");
         }
 
-        if (postImageUrl != null) {
-            post.setImage(postImageUrl);
-        }
+        post.setImage(postImageUrl);
 
 
         System.out.println("Post creato: " + post);

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -37,6 +38,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         String username = null;
         String jwtToken = null;
 
@@ -69,6 +73,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
+        System.out.println("▶️ Authentication DOPO chain.doFilter: " + authentication);
     }
 
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
