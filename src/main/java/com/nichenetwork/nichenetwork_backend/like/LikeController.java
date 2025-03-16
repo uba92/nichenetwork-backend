@@ -42,7 +42,7 @@ public class LikeController {
 
     //contare like ai post
     @GetMapping("/post/{postId}/count")
-    public ResponseEntity<Integer> getPOstLikes(@PathVariable Long postId) {
+    public ResponseEntity<Integer> getPostLikes(@PathVariable Long postId) {
         int likeCount = likeService.countLikesOnPost(postId);
         return ResponseEntity.status(HttpStatus.OK).body(likeCount);
     }
@@ -53,7 +53,6 @@ public class LikeController {
         int likeCount = likeService.countLikesOnComment(commentId);
         return ResponseEntity.status(HttpStatus.OK).body(likeCount);
     }
-
 
 
 }
