@@ -55,78 +55,80 @@ public class TestRunner implements CommandLineRunner {
 //        user.setBio(faker.lorem().sentence());
 //        userRepository.save(user);
 
-        System.out.println("---Creando le communities---");
-       for (int i = 0; i < 10; i++) {
-           Community community = new Community();
-           community.setName(faker.internet().domainName());
-           community.setDescription(faker.lorem().sentence());
+//        System.out.println("---Creando le communities---");
+//       for (int i = 0; i < 10; i++) {
+//           Community community = new Community();
+//           community.setName(faker.internet().domainName());
+//           community.setDescription(faker.lorem().sentence());
+//
+//           CommunityRequest request = new CommunityRequest(community.getName(), community.getDescription(), null, null);
+//
+//           AppUser appUser = appUserRepository.findByUsername("admin").orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username admin"));
+//
+//           communityService.createCommunity(request, appUser, null);
+//       }
+//        System.out.println("Communities salvate nel Database ");
+//
+//       System.out.println("---Creazione di post per le communities---");
+//
+//       //recupero le communities e gli utenti dal db
+//        Page<UserResponse> users = userService.getAllUsers(0, 10, "username");
+//        List<CommunityResponse> communities = communityService.getAllCommunities();
+//
+//        if (users.isEmpty() || communities.isEmpty()) {
+//            System.out.println("Nessun utente o community trovati nel database.");
+//            return;
+//        }
+//
+//        System.out.println("---Creazione di post per le communities---");
+//       for(int i = 0; i < 10; i++) {
+//           Post post = new Post();
+//           post.setContent(faker.lorem().sentence());
+//
+//           Long fixedUserId = 3L;
+//           User fixedUser = userService.loadUserById(fixedUserId);
+//
+//           Long communityId = (long) faker.number().numberBetween(1, communities.size());
+//
+//
+//           Community randomCommunity = communityRepository.findById(communityId)
+//                   .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + communityId));
+//
+//           if (faker.bool().bool()) {
+//               String randomImageUrl = getRandomImageUrl();
+//
+//               try{
+//                   Map uploadResult = cloudinaryService.uploadImageFromUrl(randomImageUrl);
+//                   String cloudinaryImageUrl = (String) uploadResult.get("secure_url");
+//                   post.setImage(cloudinaryImageUrl);
+//               } catch (IOException e) {
+//                   System.out.println("Errore durante l'upload dell'immagine: " + e.getMessage());
+//               }
+//               post.setImage(randomImageUrl);
+//               System.out.println("📸 Post con immagine generata: " + randomImageUrl);
+//           }
+//
+//           post.setUser(fixedUser);
+//           post.setCommunity(randomCommunity);
+//           postRepository.save(post);
+//       }
+//
+//        System.out.println("---Post salvati nel Database---");
+//
+//       }
+//
+//    private String getRandomImageUrl() {
+//        String[] imageUrls = {
+//                "https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492_960_720.jpg",
+//                "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
+//                "https://www.w3schools.com/html/pic_trulli.jpg",
+//                "https://www.w3schools.com/css/img_lights.jpg",
+//                "https://i.imgur.com/A1YhD9Y.jpg"
+//        };
+//
+//        return imageUrls[faker.number().numberBetween(0, imageUrls.length - 1)];
+//
 
-           CommunityRequest request = new CommunityRequest(community.getName(), community.getDescription(), null, null);
-
-           AppUser appUser = appUserRepository.findByUsername("admin").orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username admin"));
-
-           communityService.createCommunity(request, appUser, null);
-       }
-        System.out.println("Communities salvate nel Database ");
-
-       System.out.println("---Creazione di post per le communities---");
-
-       //recupero le communities e gli utenti dal db
-        Page<UserResponse> users = userService.getAllUsers(0, 10, "username");
-        List<CommunityResponse> communities = communityService.getAllCommunities();
-
-        if (users.isEmpty() || communities.isEmpty()) {
-            System.out.println("Nessun utente o community trovati nel database.");
-            return;
-        }
-
-        System.out.println("---Creazione di post per le communities---");
-       for(int i = 0; i < 10; i++) {
-           Post post = new Post();
-           post.setContent(faker.lorem().sentence());
-
-           Long fixedUserId = 3L;
-           User fixedUser = userService.loadUserById(fixedUserId);
-
-           Long communityId = (long) faker.number().numberBetween(1, communities.size());
-
-
-           Community randomCommunity = communityRepository.findById(communityId)
-                   .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + communityId));
-
-           if (faker.bool().bool()) {
-               String randomImageUrl = getRandomImageUrl();
-
-               try{
-                   Map uploadResult = cloudinaryService.uploadImageFromUrl(randomImageUrl);
-                   String cloudinaryImageUrl = (String) uploadResult.get("secure_url");
-                   post.setImage(cloudinaryImageUrl);
-               } catch (IOException e) {
-                   System.out.println("Errore durante l'upload dell'immagine: " + e.getMessage());
-               }
-               post.setImage(randomImageUrl);
-               System.out.println("📸 Post con immagine generata: " + randomImageUrl);
-           }
-
-           post.setUser(fixedUser);
-           post.setCommunity(randomCommunity);
-           postRepository.save(post);
-       }
-
-        System.out.println("---Post salvati nel Database---");
-
-       }
-
-    private String getRandomImageUrl() {
-        String[] imageUrls = {
-                "https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492_960_720.jpg",
-                "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
-                "https://www.w3schools.com/html/pic_trulli.jpg",
-                "https://www.w3schools.com/css/img_lights.jpg",
-                "https://i.imgur.com/A1YhD9Y.jpg"
-        };
-
-        return imageUrls[faker.number().numberBetween(0, imageUrls.length - 1)];
     }
 
 }

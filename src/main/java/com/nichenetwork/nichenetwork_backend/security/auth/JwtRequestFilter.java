@@ -73,7 +73,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
-        System.out.println("▶️ Authentication DOPO chain.doFilter: " + authentication);
     }
 
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
