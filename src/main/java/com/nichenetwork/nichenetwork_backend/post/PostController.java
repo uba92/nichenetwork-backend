@@ -88,9 +88,8 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(comments);
     }
     @DeleteMapping("/{id}")
-    @PreAuthorize("#appUser.username == #username or hasRole('ADMIN')")
-    public ResponseEntity<String> deletePost(@PathVariable Long id, @AuthenticationPrincipal AppUser appUser, @RequestParam String username) {
-         postService.deletePost(id);
+    public ResponseEntity<String> deletePost(@PathVariable Long id, @AuthenticationPrincipal AppUser appUser) {
+         postService.deletePost(id, appUser.getUsername());
         return ResponseEntity.ok("Post deleted successfully");
     }
 

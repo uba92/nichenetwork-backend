@@ -9,10 +9,13 @@ import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
+import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import com.nichenetwork.nichenetwork_backend.user.UserResponse;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
@@ -37,6 +40,10 @@ public class PostService {
     private final CommunityMemberRepository communityMemberRepository;
     private final CommentRepository commentRepository;
     private final CloudinaryService cloudinaryService;
+    private final LikeRepository likeRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager; // 🔥 Aggiunto per forzare la DELETE
 
 
     @Transactional
@@ -116,12 +123,27 @@ public class PostService {
         return response;
     }
 
+
     @Transactional
-    public String deletePost(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post not found with id " + id));
-        postRepository.delete(post);
-        return "Post deleted successfully";
+    public void deletePost(Long id, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (!postRepository.existsByIdAndUser(id, user)) {
+            throw new IllegalArgumentException("You can only delete your own posts");
+        }
+        if (!postRepository.existsById(id)) {
+            throw new EntityNotFoundException("Post not found with id " + id);
+        }
+
+        commentRepository.deleteByPostId(id);
+        likeRepository.deleteByPostId(id);
+
+        postRepository.deletePostById(id);
+
     }
+
+
 
     @Transactional
     public void deletePostAsModerator(Long moderatorId, Long postId) {
