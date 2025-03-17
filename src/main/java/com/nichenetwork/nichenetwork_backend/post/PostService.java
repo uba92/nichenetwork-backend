@@ -48,6 +48,10 @@ public class PostService {
 
         Community community = communityRepository.findById(request.getCommunityId()).orElseThrow(() -> new EntityNotFoundException("Community not found with id " + request.getCommunityId()));
 
+        if (!communityMemberRepository.existsByUserAndCommunity(user, community)) {
+            throw new EntityNotFoundException("User is not a member of this community");
+        }
+
         Post post = new Post();
         post.setContent(request.getContent());
         post.setCommunity(community);
