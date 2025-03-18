@@ -1,23 +1,16 @@
 package com.nichenetwork.nichenetwork_backend.post;
 
 import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
-import com.nichenetwork.nichenetwork_backend.comment.Comment;
 import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
-import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
 import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
-import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
-import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
 import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import com.nichenetwork.nichenetwork_backend.user.UserResponse;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Map;
-
 
 @Service
 @RequiredArgsConstructor
@@ -42,18 +32,13 @@ public class PostService {
     private final CloudinaryService cloudinaryService;
     private final LikeRepository likeRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager; // 🔥 Aggiunto per forzare la DELETE
-
-
     @Transactional
     public PostResponse createPost(PostRequest request, String userUsername, String imageUrl) throws IOException {
+        User user = userRepository.findByUsername(userUsername)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        System.out.println("Request per post: " + request);
-
-        User user = userRepository.findByUsername(userUsername).orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        Community community = communityRepository.findById(request.getCommunityId()).orElseThrow(() -> new EntityNotFoundException("Community not found with id " + request.getCommunityId()));
+        Community community = communityRepository.findById(request.getCommunityId())
+                .orElseThrow(() -> new EntityNotFoundException("Community not found"));
 
         if (!communityMemberRepository.existsByUserAndCommunity(user, community)) {
             throw new EntityNotFoundException("User is not a member of this community");
@@ -63,111 +48,60 @@ public class PostService {
         post.setContent(request.getContent());
         post.setCommunity(community);
         post.setUser(user);
+        post.setImage(getImageUrl(request.getImage(), imageUrl));
 
-        String postImageUrl = null;
-
-        if (imageUrl != null && !imageUrl.isBlank()) {
-            postImageUrl = imageUrl;
-        }
-        else if (request.getImage() != null && !request.getImage().isEmpty()) {
-            if (isValidImageUrl(request.getImage())) {
-                Map uploadResult = cloudinaryService.uploadImageFromUrl(request.getImage());
-                postImageUrl = (String) uploadResult.get("secure_url");
-            }
-        }
-
-        post.setImage(postImageUrl);
-
-
-        System.out.println("Post creato: " + post);
         postRepository.save(post);
 
-        System.out.println("✅ Post salvato con ID: " + post.getId());
-
-        PostResponse response = responseFromEntity(post);
-
-        System.out.println("Response del post " + response);
-        return response;
+        return responseFromEntity(post);
     }
 
-    public Page<PostResponse> getAllPosts(int currentPage, int size, String sortBy) {
+    private String getImageUrl(String imageUrl, String imageUrlFromRequest) throws IOException {
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            return imageUrl;
+        } else if (imageUrlFromRequest != null && !imageUrlFromRequest.isEmpty()) {
+            // Upload da Cloudinary se necessario
+            Map<String, Object> uploadResult = cloudinaryService.uploadImageFromUrl(imageUrlFromRequest);
+            return (String) uploadResult.get("secure_url");
+        }
+        return null;
+    }
+
+    public Page<PostResponse> getAllPosts(Long currentUserId,int currentPage, int size, String sortBy) {
         Page<Post> posts = postRepository.findAll(PageRequest.of(currentPage, size, Sort.by(sortBy)));
-        Page<PostResponse> response = posts.map(this::responseFromEntity);
-        return response;
+        return posts.map(post -> responseFromEntity(post, currentUserId));
     }
 
-    public PostResponse getPostById(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post not found with id " + id));
-        PostResponse response = responseFromEntity(post);
-        return response;
+    public PostResponse getPostById(Long id, Long currentUserId) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        return responseFromEntity(post, currentUserId);
     }
 
-//    recuperare tutti i post di un utente specifico
-    public Page<PostResponse> getAllPostsByUserId(Long userId, int currentPage, int size, String sortBy) {
-        Page<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
-        if (posts.isEmpty()) {
-            return Page.empty();
-        }
-        Page<PostResponse> response = posts.map(this::responseFromEntity);
-        return response;
-    }
-//
-//    recuperare tutti i post di una community specifica
     @Transactional
-    public Page<PostResponse> getAllPostsByCommunityId(Long communityId, int currentPage, int size, String sortBy) {
+    public Page<PostResponse> getAllPostsByCommunityId(Long communityId, int currentPage, int size, String sortBy, Long currentUserId) {
         Page<Post> posts = postRepository.findByCommunityIdOrderByCreatedAtDesc(communityId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
-        if (posts.isEmpty()) {
-            return Page.empty();
-        }
-        Page<PostResponse> response = posts.map(this::responseFromEntity);
-        return response;
+        return posts.map(post -> responseFromEntity(post, currentUserId));
     }
-
 
     @Transactional
     public void deletePost(Long id, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        if (!postRepository.existsByIdAndUser(id, user)) {
-            throw new IllegalArgumentException("You can only delete your own posts");
-        }
-        if (!postRepository.existsById(id)) {
-            throw new EntityNotFoundException("Post not found with id " + id);
-        }
-
-        commentRepository.deleteByPostId(id);
-        likeRepository.deleteByPostId(id);
-
-        postRepository.deletePostById(id);
-
-    }
-
-
-
-    @Transactional
-    public void deletePostAsModerator(Long moderatorId, Long postId) {
-        User moderator = userRepository.findById(moderatorId)
-                .orElseThrow(() -> new EntityNotFoundException("Moderator not found"));
-
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-        Community community = post.getCommunity();
-
-        CommunityMember moderatorMember = communityMemberRepository.findByUserAndCommunity(moderator, community)
-                .orElseThrow(() -> new IllegalStateException("You are not a member of this community"));
-
-        if (moderatorMember.getRole() != CommunityRole.OWNER && moderatorMember.getRole() != CommunityRole.MODERATOR) {
-            throw new IllegalStateException("Only the owner or a moderator can delete posts");
+        if (!post.getUser().equals(user)) {
+            throw new IllegalArgumentException("You can only delete your own posts");
         }
 
+        // Cancella i commenti e i like associati al post
+        commentRepository.deleteByPostId(id);
+        likeRepository.deleteByPostId(id);
         postRepository.delete(post);
     }
 
-
-    //metodi aggiuntivi
-    public PostResponse responseFromEntity(Post post) {
+    public PostResponse responseFromEntity(Post post, Long authenticatedUserId) {
         UserResponse authorDTO = new UserResponse(
                 post.getUser().getId(),
                 post.getUser().getUsername(),
@@ -179,46 +113,22 @@ public class PostService {
                 post.getUser().getEmail()
         );
 
+        int likeCount = likeRepository.countByPostId(post.getId());
+        boolean likedByUser = likeRepository.existsByUserIdAndPostId(authenticatedUserId, post.getId());
+
         return new PostResponse(
                 post.getId(),
                 post.getContent(),
                 post.getImage(),
                 authorDTO,
                 post.getCreatedAt(),
-                likeRepository.countByPostId(post.getId()),
-                likeRepository.existsByUserIdAndPostId(authorDTO.getId(), post.getId())
+                likeCount,
+                likedByUser
         );
     }
 
-    public Page<CommentResponse> getCommentsByPostId(Long postId, int page, int size, String sortBy) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
-
-        Page<Comment> comments = commentRepository.findByPostId(postId, PageRequest.of(page, size, Sort.by(sortBy)));
-
-        return comments.map(this::commentResponseFromEntity);
+    public Page<PostResponse> getAllPostsByUserId(Long userId, int currentPage, int size, String sortBy) {
+        Page<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
+        return posts.map(this::responseFromEntity);
     }
-
-    private CommentResponse commentResponseFromEntity(Comment comment) {
-        CommentResponse response = new CommentResponse();
-        response.setId(comment.getId());
-        response.setContent(comment.getContent());
-        response.setCreatedAt(comment.getCreatedAt());
-        return response;
-    }
-
-    private boolean isValidImageUrl(String imageUrl) {
-        try {
-            URL url = new URL(imageUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("HEAD");
-            int responseCode = connection.getResponseCode();
-
-            // Controlla se l'URL è raggiungibile e ha un'estensione immagine valida
-            return responseCode == 200 && imageUrl.matches(".*\\.(jpg|jpeg|png|gif|bmp)$");
-        } catch (Exception e) {
-            System.out.println("❌ URL non valido o non raggiungibile: " + imageUrl);
-            return false;
-        }
-    }
-
 }

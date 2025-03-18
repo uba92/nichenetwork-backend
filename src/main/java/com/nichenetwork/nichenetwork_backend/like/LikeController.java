@@ -12,11 +12,10 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    //aggiungere like ai post
     @PostMapping("/post/{postId}/user/{userId}")
-    public ResponseEntity<String> likePost(@PathVariable Long postId, @PathVariable Long userId) {
-        likeService.likePost(userId, postId);
-        return ResponseEntity.status(HttpStatus.OK).body("Post liked successfully");
+    public ResponseEntity<String> toggleLikePost(@PathVariable Long postId, @PathVariable Long userId) {
+        likeService.toggleLike(userId, postId);
+        return ResponseEntity.status(HttpStatus.OK).body("Like toggled successfully");
     }
 
     //aggiungere like ai commenti
@@ -26,12 +25,12 @@ public class LikeController {
         return ResponseEntity.status(HttpStatus.OK).body("Comment liked successfully");
     }
 
-    //rimuovere like ai post
-    @DeleteMapping("/post/{postId}/user/{userId}")
-    public ResponseEntity<String> unlikePost(@PathVariable Long postId, @PathVariable Long userId) {
-        likeService.unlikePost(userId, postId);
-        return ResponseEntity.status(HttpStatus.OK).body("Post unliked successfully");
-    }
+//    //rimuovere like ai post
+//    @DeleteMapping("/post/{postId}/user/{userId}")
+//    public ResponseEntity<String> unlikePost(@PathVariable Long postId, @PathVariable Long userId) {
+//        likeService.unlikePost(userId, postId);
+//        return ResponseEntity.status(HttpStatus.OK).body("Post unliked successfully");
+//    }
 
     //rimuovere like ai commenti
     @DeleteMapping("/comment/{commentId}/user/{userId}")

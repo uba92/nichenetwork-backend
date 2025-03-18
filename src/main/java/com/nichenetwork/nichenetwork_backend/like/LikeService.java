@@ -22,34 +22,25 @@ public class LikeService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public void likePost(Long userId, Long postId) {
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
-
-        if (likeRepository.existsByUserIdAndPostId(userId, postId)) {
-            throw new EntityExistsException("Like already exists");
-        }
-
-        Like like = new Like();
-        like.setUser(user);
-        like.setPost(post);
-        likeRepository.save(like);
-    }
-
-
-    @Transactional
-    public void unlikePost(Long userId, Long postId) {
-        if(!userRepository.existsById(userId)) {
+    public void toggleLike(Long userId, Long postId) {
+        if (!userRepository.existsById(userId)) {
             throw new EntityNotFoundException("User not found");
         }
 
-        if (!likeRepository.existsByUserIdAndPostId(userId, postId)) {
-            throw new EntityNotFoundException("Like not found");
-        }
 
-        likeRepository.deleteByUserIdAndPostId(userId, postId);
+        if (likeRepository.existsByUserIdAndPostId(userId, postId)) {
+
+            likeRepository.deleteByUserIdAndPostId(userId, postId);
+        } else {
+
+            Like like = new Like();
+            like.setPost(postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found")));
+            like.setUser(userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found")));
+            likeRepository.save(like);
+        }
     }
+
+
 
     public int countLikesOnPost(Long postId) {
         return likeRepository.countByPostId(postId);
