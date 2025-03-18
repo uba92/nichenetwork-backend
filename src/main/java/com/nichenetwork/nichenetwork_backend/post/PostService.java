@@ -52,7 +52,7 @@ public class PostService {
 
         postRepository.save(post);
 
-        return responseFromEntity(post);
+        return responseFromEntity(post, user.getId());
     }
 
     private String getImageUrl(String imageUrl, String imageUrlFromRequest) throws IOException {
@@ -129,6 +129,6 @@ public class PostService {
 
     public Page<PostResponse> getAllPostsByUserId(Long userId, int currentPage, int size, String sortBy) {
         Page<Post> posts = postRepository.findByUserIdOrderByCreatedAtDesc(userId, PageRequest.of(currentPage, size, Sort.by(sortBy)));
-        return posts.map(this::responseFromEntity);
+        return posts.map(post -> responseFromEntity(post, userId));
     }
 }
