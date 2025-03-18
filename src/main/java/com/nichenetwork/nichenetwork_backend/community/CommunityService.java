@@ -6,6 +6,7 @@ import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
 import com.nichenetwork.nichenetwork_backend.exceptions.UnauthorizedException;
+import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
 import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.post.PostResponse;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
@@ -33,6 +34,7 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final CommunityMemberRepository communityMemberRepository;
     private final UserRepository userRepository;
+    private final LikeRepository likeRepository;
     private final CloudinaryService cloudinaryService;
 
     @Transactional
@@ -105,7 +107,9 @@ public class CommunityService {
                                 post.getUser().getBio(),
                                 post.getUser().getCreatedAt(),
                         post.getUser().getEmail()),
-                        post.getCreatedAt()
+                        post.getCreatedAt(),
+                        likeRepository.countByPostId(post.getId()),
+                        likeRepository.existsByUserIdAndPostId(post.getUser().getId(), post.getId())
                 ))
                 .collect(Collectors.toList());
 

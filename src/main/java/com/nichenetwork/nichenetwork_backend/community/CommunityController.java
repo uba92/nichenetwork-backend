@@ -21,7 +21,7 @@ public class CommunityController {
     private final CommunityRepository communityRepository;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
     public ResponseEntity<CommunityResponse> createCommunity(@RequestParam("name") String name,
                                                              @RequestParam("description") String description,
                                                              @RequestParam(value = "image", required = false) MultipartFile imageFile,

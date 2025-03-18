@@ -22,7 +22,7 @@ public class UserController {
 
     private final UserService userService;
     @GetMapping("/me")
-    public ResponseEntity<User> getProfile(@AuthenticationPrincipal AppUser appUser) {
+    public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal AppUser appUser) {
         String username = appUser.getUsername();
 
         User user = userService.findByUsername(username);
@@ -31,7 +31,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        return ResponseEntity.ok(user);
+        System.out.println("🔹 Utente trovato: " + user);
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getAvatar(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getBio(),
+                user.getCreatedAt(),
+                user.getEmail()
+        );
+
+        return ResponseEntity.ok(userResponse);
     }
 
     @GetMapping("/me/communities")

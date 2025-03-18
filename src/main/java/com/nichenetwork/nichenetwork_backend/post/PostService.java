@@ -184,7 +184,9 @@ public class PostService {
                 post.getContent(),
                 post.getImage(),
                 authorDTO,
-                post.getCreatedAt()
+                post.getCreatedAt(),
+                likeRepository.countByPostId(post.getId()),
+                likeRepository.existsByUserIdAndPostId(authorDTO.getId(), post.getId())
         );
     }
 
