@@ -8,6 +8,7 @@ import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
+import com.nichenetwork.nichenetwork_backend.user.UserResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,11 @@ public class CommentService {
             throw new IllegalStateException("You can only delete your own comments");
         }
 
-        commentRepository.delete(comment);
+        System.out.println("✅ Eliminazione in corso...");
+
+        commentRepository.deleteByIdCustom(commentId); // 🔥 Forza la DELETE nel DB
+
+        System.out.println("🗑️ Commento eliminato con successo!");
     }
 
     @Transactional
@@ -86,10 +91,31 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    public List<Comment> getCommentsByPost(Long postId) {
+    public List<CommentResponse> getCommentsByPost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
-        return commentRepository.findByPost(post);
+        List<Comment> comments = commentRepository.findByPost(post);
+        return comments.stream()
+                .map(this::responseFromEntity)
+                .toList();
+    }
+
+    public CommentResponse responseFromEntity(Comment comment) {
+        return new CommentResponse(
+                comment.getId(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                new UserResponse(
+                        comment.getUser().getId(),
+                        comment.getUser().getUsername(),
+                        comment.getUser().getAvatar(),
+                        comment.getUser().getFirstName(),
+                        comment.getUser().getLastName(),
+                        comment.getUser().getBio(),
+                        comment.getUser().getCreatedAt(),
+                        comment.getUser().getEmail()
+                )
+        );
     }
 }

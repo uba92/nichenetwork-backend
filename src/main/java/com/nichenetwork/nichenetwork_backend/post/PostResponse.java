@@ -19,8 +19,6 @@ public class PostResponse {
     private String image;
     private UserResponse author;
     private LocalDateTime createdAt;
-    private int likeCount;
-    private boolean likedByUser;
 
 
     public PostResponse(Long id, String content, String image, @NotBlank(message = "Username is required") UserResponse author, List<CommentResponse> collect) {

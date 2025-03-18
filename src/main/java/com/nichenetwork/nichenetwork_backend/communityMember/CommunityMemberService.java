@@ -98,7 +98,8 @@ public class CommunityMemberService {
                 member.getUser().getFirstName(),
                 member.getUser().getLastName(),
                 member.getUser().getEmail(),
-                member.getRole()
+                member.getRole(),
+                member.getUser().getAvatar()
         )).collect(Collectors.toList());
     }
 

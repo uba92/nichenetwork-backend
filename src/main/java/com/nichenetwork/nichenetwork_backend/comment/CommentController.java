@@ -18,6 +18,7 @@ public class CommentController {
             @PathVariable Long postId,
             @PathVariable Long userId,
             @RequestParam String content) {
+
         return ResponseEntity.ok(commentService.createComment(userId, postId, content));
     }
 
@@ -47,7 +48,8 @@ public class CommentController {
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Comment>> getCommentsByPost(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getCommentsByPost(postId));
+    public ResponseEntity<List<CommentResponse>> getCommentsByPost(@PathVariable Long postId) {
+        return ResponseEntity.ok().body(commentService.getCommentsByPost(postId));
+
     }
 }

@@ -121,9 +121,7 @@ public class PostService {
                 post.getContent(),
                 post.getImage(),
                 authorDTO,
-                post.getCreatedAt(),
-                likeCount,
-                likedByUser
+                post.getCreatedAt()
         );
     }
 

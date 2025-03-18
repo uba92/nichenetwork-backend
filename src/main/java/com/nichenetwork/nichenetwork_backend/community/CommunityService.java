@@ -107,10 +107,8 @@ public class CommunityService {
                                 post.getUser().getBio(),
                                 post.getUser().getCreatedAt(),
                         post.getUser().getEmail()),
-                        post.getCreatedAt(),
-                        likeRepository.countByPostId(post.getId()),
-                        likeRepository.existsByUserIdAndPostId(post.getUser().getId(), post.getId())
-                ))
+                        post.getCreatedAt()
+                        ))
                 .collect(Collectors.toList());
 
 

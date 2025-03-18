@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public class LikeController {
 
     private final LikeService likeService;
+    private final LikeRepository likeRepository;
 
     @PostMapping("/post/{postId}/user/{userId}")
     public ResponseEntity<String> toggleLikePost(@PathVariable Long postId, @PathVariable Long userId) {
@@ -38,6 +39,14 @@ public class LikeController {
         likeService.unlikeComment(userId, commentId);
         return ResponseEntity.status(HttpStatus.OK).body("Comment unliked successfully");
     }
+
+
+    @GetMapping("/post/{postId}/user/{userId}")
+    public ResponseEntity<Boolean> hasUserLikedPost(@PathVariable Long postId, @PathVariable Long userId) {
+        boolean liked = likeRepository.existsByUserIdAndPostId(userId, postId);
+        return ResponseEntity.ok(liked);
+    }
+
 
     //contare like ai post
     @GetMapping("/post/{postId}/count")

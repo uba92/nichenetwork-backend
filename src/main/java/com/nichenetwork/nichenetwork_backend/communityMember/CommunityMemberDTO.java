@@ -15,4 +15,5 @@ public class CommunityMemberDTO {
     private String lastName;
     private String email;
     private CommunityRole role;
+    private String avatar;
 }
