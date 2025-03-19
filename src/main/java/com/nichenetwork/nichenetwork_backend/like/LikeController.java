@@ -26,13 +26,6 @@ public class LikeController {
         return ResponseEntity.status(HttpStatus.OK).body("Comment liked successfully");
     }
 
-//    //rimuovere like ai post
-//    @DeleteMapping("/post/{postId}/user/{userId}")
-//    public ResponseEntity<String> unlikePost(@PathVariable Long postId, @PathVariable Long userId) {
-//        likeService.unlikePost(userId, postId);
-//        return ResponseEntity.status(HttpStatus.OK).body("Post unliked successfully");
-//    }
-
     //rimuovere like ai commenti
     @DeleteMapping("/comment/{commentId}/user/{userId}")
     public ResponseEntity<String> unlikeComment(@PathVariable Long commentId, @PathVariable Long userId) {
