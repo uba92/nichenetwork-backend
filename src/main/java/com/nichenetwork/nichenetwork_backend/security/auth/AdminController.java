@@ -1,6 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.security.auth;
 
 import com.nichenetwork.nichenetwork_backend.user.User;
+import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import com.nichenetwork.nichenetwork_backend.user.UserResponse;
 import com.nichenetwork.nichenetwork_backend.user.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class AdminController {
     private final AppUserService appUserService;
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_SUPERADMIN')")
@@ -46,7 +48,7 @@ public class AdminController {
     public ResponseEntity<?> getUserRole(@PathVariable Long id) {
         try {
 
-            User user = userService.findById(id);
+            User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con id " + id));
 
 
             Optional<AppUser> appUser = appUserService.findByUsername(user.getUsername());

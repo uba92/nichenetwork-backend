@@ -1,9 +1,13 @@
 package com.nichenetwork.nichenetwork_backend.user;
 
 import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
+import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
 import com.nichenetwork.nichenetwork_backend.community.CommunityResponse;
 import com.nichenetwork.nichenetwork_backend.community.CommunityService;
+import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
+import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
+import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,14 +36,11 @@ public class UserService {
     private final AppUserRepository appUserRepository;
     private final CloudinaryService cloudinaryService;
     private final CommunityService communityService;
+    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
+    private final CommunityMemberRepository communityMemberRepository;
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
-    }
-
-    public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con id " + id));
-    }
 
     public Page<UserResponse> searchUsers(String query, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -80,7 +81,7 @@ public class UserService {
 
     @Transactional
     public String updateProfile(String username, UpdateUserRequest request) {
-        User user = findByUsername(username);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
         if (request.getFirstName() != null) {
             user.setFirstName(request.getFirstName());
         }
@@ -112,19 +113,29 @@ public class UserService {
         return"Password aggiornata con successo";
     }
 
+    @Transactional
     public String deleteUser(String username, String password) {
-        User user = findByUsername(username);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
         AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
         if (!passwordEncoder.matches(password, appUser.getPassword())) {
             throw new BadRequestException("---La password non é corretta!---");
         }
-        appUserRepository.delete(appUser);
+
+        likeRepository.deleteByPostUserId(user.getId());
+        commentRepository.deleteByUserId(user.getId());
+        postRepository.deleteByUserId(user.getId());
+        communityMemberRepository.deleteByUser(user);
+
+        appUser.getRoles().clear();
+        appUserRepository.save(appUser);
+
         userRepository.delete(user);
+        appUserRepository.delete(appUser);
         return "Utente eliminato con successo";
     }
 
     public void deleteUserAsAdmin(String username) {
-        User user = findByUsername(username);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
         AppUser appUser = appUserRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
         appUserRepository.delete(appUser);
         userRepository.delete(user);
@@ -139,20 +150,14 @@ public class UserService {
         return userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con email " + email));
     }
 
-    public User changeAvatar(String username, MultipartFile file, String imageUrl) throws IOException {
-        User user = findByUsername(username);
+    public UserResponse changeAvatar(String username, MultipartFile file, String imageUrl) throws IOException {
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
 
-        // 🔹 LOG DI DEBUG
-        System.out.println("📥 File ricevuto: " + (file != null ? file.getOriginalFilename() : "Nessun file"));
-        System.out.println("📥 URL ricevuto: " + imageUrl);
-
-        // 🔹 CONTROLLIAMO SE IL FILE O L'URL SONO PRESENTI
         if ((file == null || file.isEmpty()) && (imageUrl == null || imageUrl.isBlank())) {
-            System.out.println("❌ Nessun file o URL valido ricevuto!");
+
             throw new BadRequestException("--- L'avatar non é valido! ---");
         }
 
-        // 🔹 SE C'È UN AVATAR PRECEDENTE, LO ELIMINIAMO DA CLOUDINARY
         if (user.getAvatar() != null) {
             String publicId = extractPublicId(user.getAvatar());
             System.out.println("🔹 Public ID da eliminare: " + publicId);
@@ -161,28 +166,33 @@ public class UserService {
 
         String newAvatar = null;
 
-        // 🔹 UPLOAD DA FILE LOCALE
         if (file != null && !file.isEmpty()) {
-            System.out.println("🟢 Upload da file locale in corso...");
+
             Map uploadResult = cloudinaryService.uploadImage(file);
             newAvatar = (String) uploadResult.get("secure_url");
-            System.out.println("✅ Nuovo avatar da file caricato: " + newAvatar);
 
-            // 🔹 UPLOAD DA URL
         } else if (imageUrl != null && !imageUrl.isBlank()) {
-            System.out.println("🟡 Upload da URL rilevato...");
-            System.out.println("🔹 Tentativo di upload da URL: " + imageUrl);
+
             Map result = cloudinaryService.uploadImageFromUrl(imageUrl);
             newAvatar = (String) result.get("secure_url");
-            System.out.println("✅ Nuovo avatar da URL caricato: " + newAvatar);
+
         }
 
-        // 🔹 AGGIORNIAMO L'AVATAR DELL'UTENTE
         user.setAvatar(newAvatar);
         userRepository.save(user);
-        System.out.println("🟢 Avatar aggiornato con successo per l'utente: " + username);
 
-        return user;
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getAvatar(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getBio(),
+                user.getCreatedAt(),
+                user.getEmail()
+        );
+
+        return userResponse;
     }
 
 

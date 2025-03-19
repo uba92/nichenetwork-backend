@@ -3,6 +3,7 @@ package com.nichenetwork.nichenetwork_backend.user;
 import com.nichenetwork.nichenetwork_backend.community.CommunityResponse;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.Role;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -21,11 +23,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal AppUser appUser) {
         String username = appUser.getUsername();
 
-        User user = userService.findByUsername(username);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
 
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -64,7 +67,7 @@ public class UserController {
     public ResponseEntity<User> updateProfile(@AuthenticationPrincipal AppUser appUser, @RequestBody UpdateUserRequest request) {
         String username = appUser.getUsername();
 
-        User user = userService.findByUsername(username);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
 
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -72,7 +75,7 @@ public class UserController {
 
         userService.updateProfile(username, request);
 
-        User updatedUser = userService.findByUsername(username);
+        User updatedUser = userRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con username " + username));
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -87,10 +90,10 @@ public class UserController {
     }
 
     @PutMapping(value = "/changeAvatar", consumes = "multipart/form-data")
-    public ResponseEntity<User> changeAvatar(@AuthenticationPrincipal AppUser appUser, @RequestParam(value = "file", required = false) MultipartFile file, @RequestParam(value = "imageUrl", required = false) String imageUrl) {
+    public ResponseEntity<UserResponse> changeAvatar(@AuthenticationPrincipal AppUser appUser, @RequestParam(value = "file", required = false) MultipartFile file, @RequestParam(value = "imageUrl", required = false) String imageUrl) {
         try {
             String username = appUser.getUsername();
-            User user = userService.changeAvatar(username, file, imageUrl);
+            UserResponse user = userService.changeAvatar(username, file, imageUrl);
             return ResponseEntity.ok(user);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -100,8 +103,9 @@ public class UserController {
     @DeleteMapping("/deleteUser")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<String> deleteUser(@AuthenticationPrincipal AppUser appUser,
-                                             @RequestParam(required = false) String password,
-                                             @RequestParam(required = false) String targetUsername) {
+                                             @RequestBody Map<String, String> requestBody) {
+        String targetUsername = requestBody.get("targetUsername");
+        String password = requestBody.get("password");
         String authenticatedUsername = appUser.getUsername();
 
         if (appUser.getRoles().contains(Role.ADMIN)) {
@@ -146,7 +150,7 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = userService.findById(id);
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con id " + id));
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
