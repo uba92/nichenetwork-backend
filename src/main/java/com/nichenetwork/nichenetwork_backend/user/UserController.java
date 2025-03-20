@@ -148,12 +148,22 @@ public class UserController {
 
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Utente non trovato con id " + id));
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return ResponseEntity.ok(user);
+
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getAvatar(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getBio(),
+                user.getCreatedAt(),
+                user.getEmail()
+        );
+        return ResponseEntity.ok(userResponse);
     }
 }
