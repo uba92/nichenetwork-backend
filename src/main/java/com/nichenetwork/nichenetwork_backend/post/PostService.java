@@ -59,7 +59,7 @@ public class PostService {
         if (imageUrl != null && !imageUrl.isBlank()) {
             return imageUrl;
         } else if (imageUrlFromRequest != null && !imageUrlFromRequest.isEmpty()) {
-            // Upload da Cloudinary se necessario
+
             Map<String, Object> uploadResult = cloudinaryService.uploadImageFromUrl(imageUrlFromRequest);
             return (String) uploadResult.get("secure_url");
         }
@@ -113,8 +113,8 @@ public class PostService {
                 post.getUser().getEmail()
         );
 
-        int likeCount = likeRepository.countByPostId(post.getId());
-        boolean likedByUser = likeRepository.existsByUserIdAndPostId(authenticatedUserId, post.getId());
+//        int likeCount = likeRepository.countByPostId(post.getId());
+//        boolean likedByUser = likeRepository.existsByUserIdAndPostId(authenticatedUserId, post.getId());
 
         return new PostResponse(
                 post.getId(),
