@@ -6,6 +6,7 @@ import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
+import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import com.nichenetwork.nichenetwork_backend.user.UserResponse;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +101,18 @@ public class PostService {
         commentRepository.deleteByPostId(id);
         likeRepository.deleteByPostId(id);
         postRepository.delete(post);
+    }
+
+    public PostResponse updatePost(Long id, PostRequest request, AppUser appUser) {
+        Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        if (!post.getUser().getId().equals(appUser.getId())) {
+            throw new AccessDeniedException("Non sei autorizzato a modificare questo post.");
+        }
+
+        post.setContent(request.getContent());
+        postRepository.save(post);
+
+        return responseFromEntity(post, appUser.getId());
     }
 
     public PostResponse responseFromEntity(Post post, Long authenticatedUserId) {

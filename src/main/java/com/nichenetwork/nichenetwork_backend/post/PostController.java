@@ -103,4 +103,10 @@ public class PostController {
         postService.deletePost(id, appUser.getUsername());
         return ResponseEntity.ok("Post deleted successfully");
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PostResponse> updatePost(@PathVariable Long id, @RequestBody PostRequest request, @AuthenticationPrincipal AppUser appUser) {
+        PostResponse response = postService.updatePost(id, request, appUser);
+        return ResponseEntity.ok(response);
+    }
 }
