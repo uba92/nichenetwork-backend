@@ -202,4 +202,8 @@ public class CommunityService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public boolean isUserMemberOfCommunity(Long userId, Long id) {
+        return communityMemberRepository.existsByUserIdAndCommunityId(userId, id);
+    }
 }

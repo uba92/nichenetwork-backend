@@ -23,4 +23,6 @@ public interface CommunityMemberRepository extends JpaRepository<CommunityMember
     List<CommunityMember> findByUser(User user);
 
     void deleteByUser(User user);
+
+    boolean existsByUserIdAndCommunityId(Long userId, Long id);
 }

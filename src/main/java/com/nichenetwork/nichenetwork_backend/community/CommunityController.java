@@ -40,7 +40,15 @@ public class CommunityController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommunityResponse> getCommunityById(@PathVariable Long id) {
+    public ResponseEntity<CommunityResponse> getCommunityById(@PathVariable Long id, @AuthenticationPrincipal AppUser appUser) {
+
+        Long userId = appUser.getId();
+
+        boolean isMember = communityService.isUserMemberOfCommunity(userId, id);
+
+        if (!isMember) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 🔒 Blocca l'accesso
+        }
         CommunityResponse response = communityService.getCommunityById(id);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
