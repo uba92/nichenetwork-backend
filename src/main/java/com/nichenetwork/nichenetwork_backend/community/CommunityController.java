@@ -45,6 +45,7 @@ public class CommunityController {
         Long userId = appUser.getId();
 
         boolean isMember = communityService.isUserMemberOfCommunity(userId, id);
+        System.out.println("🔍 User ID: " + userId + " - Community ID: " + id + " - Is Member: " + isMember);
 
         if (!isMember) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 🔒 Blocca l'accesso
