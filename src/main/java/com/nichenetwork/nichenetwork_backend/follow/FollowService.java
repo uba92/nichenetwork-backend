@@ -41,6 +41,16 @@ public class FollowService {
         followRepository.save(follow);
     }
 
+    public boolean isFollowing(Long followerId, Long followingId) {
+        User follower = userRepository.findById(followerId)
+                .orElseThrow(() -> new EntityNotFoundException("Follower user not found"));
+
+        User following = userRepository.findById(followingId)
+                .orElseThrow(() -> new EntityNotFoundException("Following user not found"));
+
+        return followRepository.existsByFollowerAndFollowing(follower, following);
+    }
+
     @Transactional
     public void unfollowUser(Long followerId, Long followingId) {
         User follower = userRepository.findById(followerId)

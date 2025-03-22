@@ -40,16 +40,18 @@ public class FollowController {
     @GetMapping("/{userId}/followers")
     public ResponseEntity<?> getFollowers(@PathVariable Long userId) {
         List<UserResponse> followers = followService.getFollowers(userId);
-        return followers.isEmpty()
-                ? ResponseEntity.status(HttpStatus.NO_CONTENT).body("No followers found")
-                : ResponseEntity.ok(followers);
+        return ResponseEntity.ok(followers);
     }
 
     @GetMapping("/{userId}/following")
     public ResponseEntity<?> getFollowing(@PathVariable Long userId) {
         List<UserResponse> following = followService.getFollowing(userId);
-        return following.isEmpty()
-                ? ResponseEntity.status(HttpStatus.NO_CONTENT).body("Not following anyone")
-                : ResponseEntity.ok(following);
+        return ResponseEntity.ok(following);
+    }
+
+    @GetMapping("/{userId}/isFollowing/{followingId}")
+    public ResponseEntity<Boolean> isFollowing(@PathVariable Long userId, @PathVariable Long followingId) {
+        boolean isFollowing = followService.isFollowing(userId, followingId);
+        return ResponseEntity.ok(isFollowing);
     }
 }
