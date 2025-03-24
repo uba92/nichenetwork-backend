@@ -44,6 +44,10 @@ public class UserService {
 
     public Page<UserResponse> searchUsers(String query, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+
+        if(query == null || query.trim().isEmpty()) {
+            return Page.empty(pageable);
+        }
         return userRepository.searchUsers(query, pageable)
                 .map(user -> new UserResponse(
                         user.getId(),
