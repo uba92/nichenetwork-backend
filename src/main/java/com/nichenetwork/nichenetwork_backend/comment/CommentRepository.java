@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.comment;
 
+import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Modifying
     @Query("DELETE FROM Comment c WHERE c.user.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Comment c WHERE c.post IN (SELECT p FROM Post p WHERE p.user = :user AND p.community = :community)")
+    void deleteCommentsByUserAndCommunity(@Param("user") User user, @Param("community") Community community);
 
 
 

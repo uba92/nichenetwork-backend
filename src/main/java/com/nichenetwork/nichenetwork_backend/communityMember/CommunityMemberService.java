@@ -1,8 +1,12 @@
 package com.nichenetwork.nichenetwork_backend.communityMember;
 
+import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
 import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
+import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
+import com.nichenetwork.nichenetwork_backend.post.Post;
+import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +24,9 @@ public class CommunityMemberService {
     private final CommunityMemberRepository communityMemberRepository;
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
+    private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public void joinCommunity(Long userId, Long communityId) {
@@ -55,7 +62,11 @@ public class CommunityMemberService {
             throw new IllegalStateException("The owner cannot leave the community");
         }
 
+        likeRepository.deleteLikesByUserAndCommunity(user, community);
+        commentRepository.deleteCommentsByUserAndCommunity(user, community);
+        postRepository.deleteByUserAndCommunity(user, community);
         communityMemberRepository.delete(member);
+
     }
 
     @Transactional
