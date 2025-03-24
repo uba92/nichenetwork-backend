@@ -17,8 +17,16 @@ public class FollowController {
 
     @PostMapping("/{followerId}/follow/{followingId}")
     public ResponseEntity<String> followUser(@PathVariable Long followerId, @PathVariable Long followingId) {
-        followService.followUser(followerId, followingId);
-        return ResponseEntity.ok("User followed successfully");
+        try
+        {
+            followService.followUser(followerId, followingId);
+            return ResponseEntity.ok("User followed successfully");
+        }
+        catch (IllegalArgumentException e)
+        {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 
     @DeleteMapping("/{followerId}/unfollow/{followingId}")
