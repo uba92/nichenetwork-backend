@@ -109,4 +109,15 @@ public class PostController {
         PostResponse response = postService.updatePost(id, request, appUser);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/following")
+    public ResponseEntity<Page<PostResponse>> getAllPostsByFollowing(
+            @RequestParam(defaultValue = "0") int currentPage,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @AuthenticationPrincipal AppUser appUser) {
+
+        Page<PostResponse> response = postService.getAllPostsByFollowing(currentPage, size, sortBy, appUser);
+        return ResponseEntity.ok(response);
+    }
 }

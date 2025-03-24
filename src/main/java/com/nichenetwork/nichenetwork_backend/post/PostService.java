@@ -5,6 +5,7 @@ import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
 import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.community.CommunityRepository;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
+import com.nichenetwork.nichenetwork_backend.follow.FollowService;
 import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.user.User;
@@ -16,10 +17,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -33,6 +36,7 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final CloudinaryService cloudinaryService;
     private final LikeRepository likeRepository;
+    private final FollowService followService;
 
     @Transactional
     public PostResponse createPost(PostRequest request, String userUsername, String imageUrl) throws IOException {
@@ -113,6 +117,15 @@ public class PostService {
         postRepository.save(post);
 
         return responseFromEntity(post, appUser.getId());
+    }
+
+    public Page<PostResponse> getAllPostsByFollowing(int currentPage, int size, String sortBy, AppUser appUser) {
+        List<Long> followingIds = followService.getFollowing(appUser.getId()).stream()
+                .map(UserResponse::getId)
+                .toList();
+
+        Page<Post> posts = postRepository.findByUserIdInOrderByCreatedAtDesc(followingIds, PageRequest.of(currentPage, size, Sort.by(sortBy)));
+        return posts.map(post -> responseFromEntity(post, appUser.getId()));
     }
 
     public PostResponse responseFromEntity(Post post, Long authenticatedUserId) {

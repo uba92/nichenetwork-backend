@@ -2,6 +2,7 @@ package com.nichenetwork.nichenetwork_backend.post;
 
 import com.nichenetwork.nichenetwork_backend.user.User;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -31,4 +32,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying
     @Query("DELETE FROM Post p WHERE p.user.id = :id")
     void deleteByUserId(Long id);
+
+    Page<Post> findByUserIdInOrderByCreatedAtDesc(List<Long> followingIds, PageRequest of);
 }
