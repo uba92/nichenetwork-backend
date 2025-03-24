@@ -23,7 +23,7 @@ public class AuthController {
         // Se ci sono errori di validazione, restituiamo 400 con i dettagli degli errori
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessages = new StringBuilder("Errore di validazione: ");
-            bindingResult.getAllErrors().forEach(error -> errorMessages.append(error.getDefaultMessage()).append("; "));
+            bindingResult.getAllErrors().forEach(error -> errorMessages.append(error.getDefaultMessage()));
             return ResponseEntity.badRequest().body(errorMessages.toString());
         }
 
