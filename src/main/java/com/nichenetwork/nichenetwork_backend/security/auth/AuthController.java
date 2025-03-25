@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.security.auth;
 
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class AuthController {
     private final AppUserService appUserService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest registerRequest, BindingResult bindingResult) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest registerRequest, BindingResult bindingResult) throws MessagingException {
         // Se ci sono errori di validazione, restituiamo 400 con i dettagli degli errori
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessages = new StringBuilder("Errore di validazione: ");

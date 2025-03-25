@@ -1,9 +1,10 @@
 package com.nichenetwork.nichenetwork_backend.security.auth;
 
+import com.nichenetwork.nichenetwork_backend.email.EmailService;
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
-import com.nichenetwork.nichenetwork_backend.user.ChangePasswordRequest;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,10 @@ public class AppUserService {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    public User registerUser(String username, String password, String email, String firstName, String lastName, Set<Role> roles) {
+    @Autowired
+    private EmailService emailService;
+
+    public User registerUser(String username, String password, String email, String firstName, String lastName, Set<Role> roles) throws MessagingException {
         if (appUserRepository.existsByUsername(username)) {
             throw new EntityExistsException("Username già in uso");
         }
@@ -75,6 +79,8 @@ public class AppUserService {
         user.setAvatar(null);
 
         userRepository.save(user);
+
+        emailService.sendEmail(email, firstName);
 
         return user;
     }
