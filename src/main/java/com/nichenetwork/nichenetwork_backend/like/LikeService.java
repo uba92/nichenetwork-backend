@@ -2,6 +2,8 @@ package com.nichenetwork.nichenetwork_backend.like;
 
 import com.nichenetwork.nichenetwork_backend.comment.Comment;
 import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
+import com.nichenetwork.nichenetwork_backend.enums.NotificationType;
+import com.nichenetwork.nichenetwork_backend.notification.NotificationService;
 import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.user.User;
@@ -20,6 +22,7 @@ public class LikeService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public void toggleLike(Long userId, Long postId) {
@@ -27,6 +30,9 @@ public class LikeService {
             throw new EntityNotFoundException("User not found");
         }
 
+        User sender = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        Post post = postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
         if (likeRepository.existsByUserIdAndPostId(userId, postId)) {
 
@@ -34,9 +40,21 @@ public class LikeService {
         } else {
 
             Like like = new Like();
-            like.setPost(postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found")));
-            like.setUser(userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found")));
+            like.setPost(post);
+            like.setUser(sender);
             likeRepository.save(like);
+
+            if(!sender.getId().equals(post.getUser().getId())) {
+                String communityName = post.getCommunity().getName();
+                String message = sender.getUsername() + " ha messo un like al tuo post nella community: " + communityName;
+                notificationService.createNotification(
+                        post.getUser(),
+                        sender,
+                        message,
+                        NotificationType.LIKE,
+                        post
+                );
+            }
         }
     }
 

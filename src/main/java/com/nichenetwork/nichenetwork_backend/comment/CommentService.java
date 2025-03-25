@@ -4,6 +4,8 @@ import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
+import com.nichenetwork.nichenetwork_backend.enums.NotificationType;
+import com.nichenetwork.nichenetwork_backend.notification.NotificationService;
 import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.user.User;
@@ -24,6 +26,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommunityMemberRepository communityMemberRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public Comment createComment(Long userId, Long postId, String content) {
@@ -38,7 +41,22 @@ public class CommentService {
         comment.setPost(post);
         comment.setContent(content);
 
-        return commentRepository.save(comment);
+        commentRepository.save(comment);
+
+        if(!user.getId().equals(post.getUser().getId())) {
+            String communityName = post.getCommunity().getName();
+            String message = user.getUsername() + " ha commentato un tuo post nella community: " + communityName;
+
+            notificationService.createNotification(
+                    post.getUser(),
+                    user,
+                    message,
+                    NotificationType.COMMENT,
+                    post
+            );
+        }
+
+        return comment;
     }
 
     @Transactional

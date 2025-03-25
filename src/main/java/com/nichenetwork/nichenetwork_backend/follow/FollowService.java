@@ -1,5 +1,7 @@
 package com.nichenetwork.nichenetwork_backend.follow;
 
+import com.nichenetwork.nichenetwork_backend.enums.NotificationType;
+import com.nichenetwork.nichenetwork_backend.notification.NotificationService;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import com.nichenetwork.nichenetwork_backend.user.UserResponse;
@@ -18,6 +20,7 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public void followUser(Long followerId, Long followingId) {
@@ -39,6 +42,17 @@ public class FollowService {
         follow.setFollower(follower);
         follow.setFollowing(following);
         followRepository.save(follow);
+
+
+        String message = follower.getUsername() + " ha iniziato a seguirti";
+        notificationService.createNotification(
+                following,
+                follower,
+                message,
+                NotificationType.FOLLOW,
+                null
+            );
+
     }
 
     public boolean isFollowing(Long followerId, Long followingId) {
