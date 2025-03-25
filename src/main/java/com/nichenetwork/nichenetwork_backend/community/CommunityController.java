@@ -1,6 +1,10 @@
 package com.nichenetwork.nichenetwork_backend.community;
 
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
+import com.nichenetwork.nichenetwork_backend.security.auth.Role;
+import com.nichenetwork.nichenetwork_backend.user.User;
+import com.nichenetwork.nichenetwork_backend.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +52,9 @@ public class CommunityController {
         System.out.println("🔍 User ID: " + userId + " - Community ID: " + id + " - Is Member: " + isMember);
 
         if (!isMember) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 🔒 Blocca l'accesso
+            if(!appUser.getRoles().contains(Role.ADMIN)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         }
         CommunityResponse response = communityService.getCommunityById(id);
         return ResponseEntity.status(HttpStatus.OK).body(response);
