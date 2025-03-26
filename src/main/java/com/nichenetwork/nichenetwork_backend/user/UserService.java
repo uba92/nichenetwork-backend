@@ -7,6 +7,7 @@ import com.nichenetwork.nichenetwork_backend.community.CommunityService;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.exceptions.BadRequestException;
 import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
+import com.nichenetwork.nichenetwork_backend.notification.NotificationRepository;
 import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUserRepository;
@@ -40,6 +41,7 @@ public class UserService {
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final CommunityMemberRepository communityMemberRepository;
+    private final NotificationRepository notificationRepository;
 
 
     public Page<UserResponse> searchUsers(String query, int page, int size) {
@@ -125,6 +127,7 @@ public class UserService {
             throw new BadRequestException("---La password non é corretta!---");
         }
 
+        notificationRepository.deleteByUser(user);
         likeRepository.deleteByPostUserId(user.getId());
         commentRepository.deleteByUserId(user.getId());
         postRepository.deleteByUserId(user.getId());
