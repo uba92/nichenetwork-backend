@@ -43,4 +43,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     void deleteByUserAndCommunity(@Param("user") User user, @Param("community") Community community);
 
 
+    List<Post> findByCommunity(Community community);
 }

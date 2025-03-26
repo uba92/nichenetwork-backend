@@ -1,13 +1,16 @@
 package com.nichenetwork.nichenetwork_backend.community;
 
 import com.nichenetwork.nichenetwork_backend.cloudinary.CloudinaryService;
+import com.nichenetwork.nichenetwork_backend.comment.CommentRepository;
 import com.nichenetwork.nichenetwork_backend.comment.CommentResponse;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMember;
 import com.nichenetwork.nichenetwork_backend.communityMember.CommunityMemberRepository;
 import com.nichenetwork.nichenetwork_backend.enums.CommunityRole;
 import com.nichenetwork.nichenetwork_backend.exceptions.UnauthorizedException;
 import com.nichenetwork.nichenetwork_backend.like.LikeRepository;
+import com.nichenetwork.nichenetwork_backend.notification.NotificationRepository;
 import com.nichenetwork.nichenetwork_backend.post.Post;
+import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.post.PostResponse;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.security.auth.Role;
@@ -36,6 +39,9 @@ public class CommunityService {
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
     private final CloudinaryService cloudinaryService;
+    private final PostRepository postRepository;
+    private final NotificationRepository notificationRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public CommunityResponse createCommunity(CommunityRequest request, AppUser adminUser, MultipartFile imageFile) throws IOException {
@@ -160,13 +166,33 @@ public class CommunityService {
 
 
     @Transactional
-    public String deleteCommunity(Long id) {
-        Community community = communityRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Community not found with id " + id));
+    public void deleteCommunity(Long communityId) {
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new EntityNotFoundException("Community non trovata"));
+
+        List<Post> communityPosts = postRepository.findByCommunity(community);
+
+        for (Post post : communityPosts) {
+
+            notificationRepository.deleteByRelatedPost(post);
+
+
+            likeRepository.deleteByPostId(post.getId());
+
+
+            commentRepository.deleteByPostId(post.getId());
+        }
+
+
+        postRepository.deleteAll(communityPosts);
+
+
+        communityMemberRepository.deleteByCommunity(community);
 
         communityRepository.delete(community);
-        return ("Community deleted successfully");
     }
+
+
 
     public List<CommunityResponse> searchCommunities(String query) {
         List<Community> communities = communityRepository.searchCommunities(query);

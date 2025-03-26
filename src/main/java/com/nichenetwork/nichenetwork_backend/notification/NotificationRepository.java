@@ -1,5 +1,6 @@
 package com.nichenetwork.nichenetwork_backend.notification;
 
+import com.nichenetwork.nichenetwork_backend.post.Post;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -23,4 +24,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     void deleteBySenderId(@Param("userId") Long userId);
 
 
+    void deleteByRelatedPost(Post post);
 }
