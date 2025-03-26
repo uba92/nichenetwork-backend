@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
@@ -24,7 +26,8 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     @Modifying
     @Transactional
-    void deleteByPostId(Long postId);
+    void deleteByPostIdIn(List<Long> postIds);
+
 
 
     @Modifying

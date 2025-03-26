@@ -171,16 +171,14 @@ public class CommunityService {
                 .orElseThrow(() -> new EntityNotFoundException("Community non trovata"));
 
         List<Post> communityPosts = postRepository.findByCommunity(community);
+        List<Long> postIds = communityPosts.stream().map(Post::getId).toList();
+
+        commentRepository.deleteByPostIdIn(postIds);
+
+        likeRepository.deleteByPostIdIn(postIds);
 
         for (Post post : communityPosts) {
-
-            commentRepository.deleteByPostId(post.getId());
-
-            likeRepository.deleteByPostId(post.getId());
-
             notificationRepository.deleteByRelatedPost(post);
-
-
         }
 
         postRepository.deleteAll(communityPosts);
@@ -189,6 +187,7 @@ public class CommunityService {
 
         communityRepository.delete(community);
     }
+
 
 
 
