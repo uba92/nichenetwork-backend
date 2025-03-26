@@ -181,6 +181,10 @@ public class CommunityService {
             notificationRepository.deleteByRelatedPost(post);
         }
 
+        for (Post post : communityPosts) {
+            post.setComments(new ArrayList<>());
+        }
+
         postRepository.deleteAll(communityPosts);
 
         communityMemberRepository.deleteByCommunity(community);
