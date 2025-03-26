@@ -22,7 +22,10 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     int countByCommentId(Long commentId);
     void deleteByUserIdAndCommentId(Long userId, Long commentId);
 
-    void deleteByPostId(Long id);
+    @Modifying
+    @Transactional
+    void deleteByPostId(Long postId);
+
 
     @Modifying
     @Query("DELETE FROM Like l WHERE l.user = :user")

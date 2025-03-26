@@ -4,7 +4,9 @@ import com.nichenetwork.nichenetwork_backend.community.Community;
 import com.nichenetwork.nichenetwork_backend.security.auth.AppUser;
 import com.nichenetwork.nichenetwork_backend.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,5 +28,8 @@ public interface CommunityMemberRepository extends JpaRepository<CommunityMember
 
     boolean existsByUserIdAndCommunityId(Long userId, Long id);
 
+    @Modifying
+    @Transactional
     void deleteByCommunity(Community community);
+
 }

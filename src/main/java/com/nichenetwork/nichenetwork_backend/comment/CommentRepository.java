@@ -23,7 +23,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Page<Comment> findByPostId(Long postId, PageRequest of);
 
-    void deleteByPostId(Long id);
+    @Modifying
+    @Transactional
+    void deleteByPostId(Long postId);
+
 
     @Transactional
     @Modifying
