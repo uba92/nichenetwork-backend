@@ -26,8 +26,8 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     @Modifying
     @Transactional
-    void deleteByPostIdIn(List<Long> postIds);
-
+    @Query("DELETE FROM Like l WHERE l.post.id IN :postIds")
+    void deleteByPostIdIn(@Param("postIds") List<Long> postIds);
 
 
     @Modifying
