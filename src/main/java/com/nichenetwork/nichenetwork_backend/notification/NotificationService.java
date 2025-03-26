@@ -2,11 +2,14 @@ package com.nichenetwork.nichenetwork_backend.notification;
 
 import com.nichenetwork.nichenetwork_backend.enums.NotificationType;
 import com.nichenetwork.nichenetwork_backend.post.Post;
+import com.nichenetwork.nichenetwork_backend.post.PostRepository;
 import com.nichenetwork.nichenetwork_backend.user.User;
+import com.nichenetwork.nichenetwork_backend.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,25 +19,35 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
 
+    @Transactional
     public void createNotification(User recipient, User sender, String message, NotificationType type, Post relatedPost) {
+
+        recipient = userRepository.findById(recipient.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Recipient not found"));
+
+        sender = userRepository.findById(sender.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Sender not found"));
+
+        Post managedPost = null;
+        if (relatedPost != null) {
+            managedPost = postRepository.findById(relatedPost.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        }
 
         Notification notification = new Notification();
         notification.setRecipient(recipient);
         notification.setSender(sender);
         notification.setMessage(message);
         notification.setType(type);
-        notification.setRelatedPost(relatedPost);
+        notification.setRelatedPost(managedPost);
+        notification.setRead(false);
 
         notificationRepository.save(notification);
     }
 
-    public List<NotificationDTO> getNotificationsForUser(User user) {
-
-        List<Notification> notifications = notificationRepository.findByRecipientOrderByCreatedAtDesc(user);
-        return notifications.stream().map(this::mapNotificationToDTO).collect(Collectors.toList());
-
-    }
 
     public List<NotificationDTO> getUnreadNotifications(User user) {
 
