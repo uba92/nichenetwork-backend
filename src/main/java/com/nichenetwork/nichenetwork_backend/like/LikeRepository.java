@@ -44,4 +44,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     @Query("DELETE FROM Like l WHERE l.post IN (SELECT p FROM Post p WHERE p.user = :user AND p.community = :community)")
     void deleteLikesByUserAndCommunity(@Param("user") User user, @Param("community") Community community);
 
+    void deleteByPostId(Long id);
 }
