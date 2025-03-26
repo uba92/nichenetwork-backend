@@ -127,8 +127,9 @@ public class UserService {
             throw new BadRequestException("---La password non é corretta!---");
         }
 
-        notificationRepository.deleteByRecipient(user);
-        notificationRepository.deleteBySender(user);
+        notificationRepository.deleteByRecipient_Id(user.getId());
+        notificationRepository.deleteBySender_Id(user.getId());
+
         likeRepository.deleteByPostUserId(user.getId());
         commentRepository.deleteByUserId(user.getId());
         postRepository.deleteByUserId(user.getId());
