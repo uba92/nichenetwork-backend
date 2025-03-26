@@ -174,18 +174,16 @@ public class CommunityService {
 
         for (Post post : communityPosts) {
 
-            notificationRepository.deleteByRelatedPost(post);
-
+            commentRepository.deleteByPostId(post.getId());
 
             likeRepository.deleteByPostId(post.getId());
 
+            notificationRepository.deleteByRelatedPost(post);
 
-            commentRepository.deleteByPostId(post.getId());
+
         }
 
-
         postRepository.deleteAll(communityPosts);
-
 
         communityMemberRepository.deleteByCommunity(community);
 
