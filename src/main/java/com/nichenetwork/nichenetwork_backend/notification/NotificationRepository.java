@@ -25,7 +25,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     void deleteBySenderId(@Param("userId") Long userId);
 
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     void deleteByRelatedPost(Post post);
 

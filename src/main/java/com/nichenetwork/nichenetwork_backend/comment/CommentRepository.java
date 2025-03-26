@@ -23,7 +23,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Page<Comment> findByPostId(Long postId, PageRequest of);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("DELETE FROM Comment c WHERE c.post.id IN :postIds")
     void deleteByPostIdIn(@Param("postIds") List<Long> postIds);
