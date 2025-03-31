@@ -1,7 +1,6 @@
 services:
   - type: web
     name: nichenetwork-backend
-    runtime: java
     buildCommand: "./mvnw clean package -DskipTests"
     startCommand: "java -jar target/nichenetwork-backend-0.0.1-SNAPSHOT.jar"
     envVars:
