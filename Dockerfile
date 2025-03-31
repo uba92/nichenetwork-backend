@@ -1,11 +1,15 @@
-# Dockerfile per deploy Spring Boot su Render
-
 FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-COPY target/nichenetwork-backend-0.0.1-SNAPSHOT.jar app.jar
+# Copia tutto il progetto
+COPY . .
 
+# Esegui il build
+RUN ./mvnw clean package -DskipTests
+
+# Espone la porta 8080
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Avvia il jar generato
+CMD ["java", "-jar", "target/nichenetwork-backend-0.0.1-SNAPSHOT.jar"]
